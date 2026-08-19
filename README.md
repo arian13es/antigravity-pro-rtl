@@ -12,14 +12,15 @@ This tool seamlessly injects a high-performance, native-feeling RTL layout engin
 * **Universal Compatibility**: Dynamically unpacks and repacks Antigravity's `.asar` packages, safely injecting the payload into the core execution flow.
 
 ## ⚙️ Installation & Usage
-Clone the repository and run the patcher using Node.js:
+You can install this tool globally directly from GitHub without manually downloading the source code:
 ```bash
-git clone https://github.com/arian13es/antigravity-pro-rtl.git
-cd antigravity-pro-rtl
-npm install
-node bin/index.js
+npm install -g arian13es/antigravity-pro-rtl
 ```
-*(To restore Antigravity to its original factory state, simply run `node bin/index.js --restore`)*
+Once installed, simply run the following command anywhere in your terminal:
+```bash
+antigravity-rtl
+```
+*(To restore Antigravity to its original factory state, run `antigravity-rtl --restore`)*
 
 ## 🤝 Acknowledgements
 This project was heavily rebuilt, modernized, and expanded into a Universal Injector with a highly optimized Pro UI exclusively for the Antigravity ecosystem. The foundational concept and initial injection logic were inspired by the open-source repository [mmnaderi/antigravity-rtl](https://github.com/mmnaderi/antigravity-rtl). 
@@ -37,14 +38,15 @@ This project was heavily rebuilt, modernized, and expanded into a Universal Inje
 * **معماری کاملاً خودکار**: شناسایی خودکار نسخه‌های آنتی‌گراویتی، باز کردن پکیج‌های `.asar`، تزریق کدهای جاوااسکریپت و بسته‌بندیِ مجدد برنامه به صورت کاملاً اتوماتیک با یک دستور.
 
 ## ⚙️ نصب و راه‌اندازی
-ابتدا سورس‌کد را کلون کرده و سپس با استفاده از Node.js آن را اجرا کنید:
+شما می‌توانید این ابزار را به صورت یک دستورِ سراسری (Global) مستقیماً از گیت‌هاب روی سیستم خود نصب کنید (بدون نیاز به دانلود پوشه):
 ```bash
-git clone https://github.com/arian13es/antigravity-pro-rtl.git
-cd antigravity-pro-rtl
-npm install
-node bin/index.js
+npm install -g arian13es/antigravity-pro-rtl
 ```
-*(برای بازگردانی آنتی‌گراویتی به حالت اولیه کارخانه، از سوییچ `node bin/index.js --restore` استفاده کنید)*
+پس از اتمام نصب، در هر کجای ویندوز تنها با وارد کردن دستور زیر، پچر اجرا می‌شود:
+```bash
+antigravity-rtl
+```
+*(برای بازگردانی آنتی‌گراویتی به حالت اولیه کارخانه، از دستور `antigravity-rtl --restore` استفاده کنید)*
 
 ## 🤝 قدردانی
 معماری این ابزار، پنل‌های رابط کاربری و موتورهای تزریق آن به صورت اختصاصی برای این نسخه بازنویسی و مدرن شده‌اند، اما ایدهٔ اولیه و کانسپت اصلیِ این پروژه با الهام از ریپوزیتوریِ متن‌بازِ [mmnaderi/antigravity-rtl](https://github.com/mmnaderi/antigravity-rtl) شکل گرفته است.
