@@ -1,0 +1,37 @@
+{
+  "name": "smart-rtl-patcher",
+  "version": "1.0.10",
+  "description": "A universal Pro RTL (Right-to-Left) patcher with UI settings for Electron-based editors.",
+  "main": "./bin/index.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "keywords": [
+    "vscode",
+    "cursor",
+    "electron",
+    "rtl",
+    "persian",
+    "arabic",
+    "hebrew",
+    "patcher",
+    "asar"
+  ],
+  "author": "Arian",
+  "license": "MIT",
+  "files": [
+    "bin",
+    "README.md"
+  ],
+  "dependencies": {
+    "@electron/asar": "^4.2.0",
+    "figlet": "^1.11.0",
+    "ora": "^9.4.1",
+    "picocolors": "^1.1.1",
+    "prompts": "^2.4.2"
+  },
+  "type": "module",
+  "bin": {
+    "smart-rtl": "./bin/index.js"
+  }
+}
