@@ -146,7 +146,7 @@
         
         const title = document.createElement('div');
         title.style.cssText = 'text-align:center; font-weight:700; font-size:15px; margin-bottom:16px; letter-spacing:0.5px;';
-        title.textContent = 'Smart RTL Settings';
+        title.textContent = 'Antigravity Pro RTL Settings';
         panel.appendChild(title);
 
         const trigger = document.createElement('div');

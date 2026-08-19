@@ -1,12 +1,13 @@
 {
-  "name": "smart-rtl-patcher",
+  "name": "antigravity-pro-rtl",
   "version": "1.0.10",
-  "description": "A universal Pro RTL (Right-to-Left) patcher with UI settings for Electron-based editors.",
+  "description": "A Universal Pro RTL (Right-to-Left) patcher with UI settings exclusively for the Antigravity ecosystem.",
   "main": "./bin/index.js",
   "scripts": {
     "test": "echo \"Error: no test specified\" && exit 1"
   },
   "keywords": [
+    "antigravity",
     "vscode",
     "cursor",
     "electron",
@@ -14,8 +15,7 @@
     "persian",
     "arabic",
     "hebrew",
-    "patcher",
-    "asar"
+    "patcher"
   ],
   "author": "Arian",
   "license": "MIT",
@@ -32,6 +32,6 @@
   },
   "type": "module",
   "bin": {
-    "smart-rtl": "./bin/index.js"
+    "antigravity-rtl": "./bin/index.js"
   }
 }

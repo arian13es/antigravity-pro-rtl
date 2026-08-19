@@ -18,17 +18,17 @@ const pkg = JSON.parse(fs.readFileSync(pkgPath, 'utf8'));
 
 function printBanner() {
     try {
-        const fullArt = figlet.textSync('Smart RTL', { font: 'Standard' }).split('\n');
+        const fullArt = figlet.textSync('Antigravity', { font: 'Standard' }).split('\n');
         console.log('');
         for (const line of fullArt) {
             if (!line.trim()) continue;
             console.log(bold(line));
         }
         console.log('');
-        console.log(bold(`  Universal Pro RTL Injector | v${pkg.version}`));
+        console.log(bold(`  Antigravity Pro RTL Injector | v${pkg.version}`));
         console.log(`  GitHub: https://github.com/arian13es\n`);
     } catch (err) {
-        console.log(bold(`\n✨ Smart RTL Injector v${pkg.version}`));
+        console.log(bold(`\n✨ Antigravity Pro RTL Injector v${pkg.version}`));
         console.log(`  GitHub: https://github.com/arian13es\n`);
     }
 }
@@ -39,20 +39,20 @@ const args = process.argv.slice(2);
 const isRestore = args.includes('--restore');
 
 function getStandardPath() {
-    if (os.platform() === 'darwin') return '/Applications/Visual Studio Code.app/Contents/Resources/app.asar';
-    if (os.platform() === 'win32') return path.join(process.env.LOCALAPPDATA || '', 'Programs', 'Microsoft VS Code', 'resources', 'app.asar');
-    return '/usr/share/code/resources/app.asar';
+    if (os.platform() === 'darwin') return '/Applications/Antigravity.app/Contents/Resources/app.asar';
+    if (os.platform() === 'win32') return path.join(process.env.LOCALAPPDATA || '', 'Programs', 'Antigravity', 'resources', 'app.asar');
+    return '/opt/Antigravity/resources/app.asar';
 }
 
 function getIDEPath() {
-    if (os.platform() === 'win32') return path.join(process.env.LOCALAPPDATA || '', 'Programs', 'cursor', 'resources', 'app');
-    if (os.platform() === 'darwin') return '/Applications/Cursor.app/Contents/Resources/app';
-    return '/opt/Cursor/resources/app';
+    if (os.platform() === 'win32') return path.join(process.env.LOCALAPPDATA || '', 'Programs', 'Antigravity IDE', 'resources', 'app');
+    if (os.platform() === 'darwin') return '/Applications/Antigravity IDE.app/Contents/Resources/app';
+    return '/opt/Antigravity IDE/resources/app';
 }
 
 async function patchIDE(appDir, isRestore) {
     if (!fs.existsSync(appDir)) {
-        console.log(yellow(`[?] Target bypass: Primary IDE architecture not found at ${appDir}.`));
+        console.log(yellow(`[?] Target bypass: Antigravity IDE architecture not found at ${appDir}.`));
         return;
     }
     console.log(blue(`\n[✓] Target locked: IDE ecosystem located at ${appDir}`));
@@ -152,10 +152,10 @@ async function patchIDE(appDir, isRestore) {
 
 async function patchStandard(asarPath, isRestore) {
     if (!fs.existsSync(asarPath)) {
-        console.log(yellow(`[?] Target bypass: Standard App Core not found at ${asarPath}.`));
+        console.log(yellow(`[?] Target bypass: Standard Antigravity not found at ${asarPath}.`));
         return;
     }
-    console.log(blue(`\n[✓] Target locked: Standard App Core located at ${asarPath}`));
+    console.log(blue(`\n[✓] Target locked: Standard Antigravity located at ${asarPath}`));
     
     const backupPath = asarPath + '.bak';
     if (isRestore) {
@@ -166,7 +166,7 @@ async function patchStandard(asarPath, isRestore) {
         const spinner = ora('Reverting standard ASAR core to factory state...').start();
         try {
             fs.copyFileSync(backupPath, asarPath);
-            spinner.succeed('Standard App Core successfully reverted.');
+            spinner.succeed('Standard Antigravity successfully reverted.');
         } catch (e) {
             spinner.fail('Critical failure during ASAR restoration.');
             console.error(red(e.message));
@@ -209,8 +209,8 @@ async function patchStandard(asarPath, isRestore) {
 
         let utilsCode = fs.readFileSync(utilsPath, 'utf8');
         
-        if (utilsCode.includes('/* SMART RTL PATCH */')) {
-            spinner.succeed('Standard App Core is already operating on the patched architecture.');
+        if (utilsCode.includes('/* ANTIGRAVITY PRO RTL PATCH */')) {
+            spinner.succeed('Standard Antigravity is already operating on the patched architecture.');
             fs.rmSync(extractDir, { recursive: true, force: true });
             return;
         }
@@ -221,7 +221,7 @@ async function patchStandard(asarPath, isRestore) {
         // Safely serialize the code to avoid template literal escaping issues in Electron
         const ideCodeString = JSON.stringify(ideCode);
 
-        const payload = `/* SMART RTL PATCH */
+        const payload = `/* ANTIGRAVITY PRO RTL PATCH */
 void win.loadURL(url);
 
 win.webContents.on('dom-ready', () => {
@@ -266,7 +266,7 @@ win.webContents.on('dom-ready', () => {
     try {
         await asar.createPackage(extractDir, asarPath);
         fs.rmSync(extractDir, { recursive: true, force: true });
-        spinner.succeed('★ Standard ecosystem successfully overhauled!');
+        spinner.succeed('★ Standard Antigravity ecosystem successfully overhauled!');
     } catch (e) {
         spinner.fail('Failed to reconstruct the core package.');
         console.error(red(e.message));
@@ -274,13 +274,13 @@ win.webContents.on('dom-ready', () => {
 }
 
 async function main() {
-    console.log(green('\n⚡ Initializing Universal UI Injector...'));
+    console.log(green('\n⚡ Initializing Antigravity Pro RTL Injector...'));
     
     let standardPath = getStandardPath();
     let idePath = getIDEPath();
     
     if (!fs.existsSync(standardPath) && !fs.existsSync(idePath)) {
-        console.log(yellow(`[?] Automatic scanning failed to locate the target instances.`));
+        console.log(yellow(`[?] Automatic scanning failed to locate the Antigravity instances.`));
         const response = await prompts({
             type: 'text',
             name: 'customPath',
