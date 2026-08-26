@@ -95,16 +95,18 @@
     function updateDynamicCSS(faFont, enFont, codeFont, lh, fs) {
         let faFontName = "'PersianOnlyFont'";
         let faFontRule = '';
+        const persianUnicodeRange = 'U+0600-06FF, U+FB50-FDFF, U+FE70-FEFF';
+        
         if (faFont) {
             faFontName = `'UserPersianFont', 'PersianOnlyFont'`;
             let baseFaFont = faFont.replace(/[-\s]?Regular$/i, '');
             faFontRule = `
-                @font-face { font-family: 'UserPersianFont'; src: local('${faFont}'), local('${baseFaFont}'); font-weight: 400; }
-                @font-face { font-family: 'UserPersianFont'; src: local('${baseFaFont} Bold'), local('${baseFaFont}-Bold'); font-weight: 700; }
+                @font-face { font-family: 'UserPersianFont'; src: local('${faFont}'), local('${baseFaFont}'); font-weight: 400; unicode-range: ${persianUnicodeRange}; }
+                @font-face { font-family: 'UserPersianFont'; src: local('${baseFaFont} Bold'), local('${baseFaFont}-Bold'); font-weight: 700; unicode-range: ${persianUnicodeRange}; }
             `;
         }
         
-        let enFontStr = enFont ? `'${enFont}', ui-sans-serif, system-ui, sans-serif` : 'ui-sans-serif, system-ui, sans-serif';
+        let enFontStr = enFont ? `'${enFont}', ` : '';
         
         const dynamicCSS = `
             ${faFontRule}
@@ -112,16 +114,19 @@
                 font-family: 'PersianOnlyFont';
                 src: url('data:font/woff2;base64,__FONT_BASE64__') format('woff2');
                 font-weight: 100 900;
-            }
-            :root {
-                --vscode-font-family: ${faFontName}, ${enFontStr}, "Segoe UI Emoji" !important;
+                unicode-range: ${persianUnicodeRange};
             }
             .smart-rtl-text-node, 
             .monaco-chat-request, 
             .monaco-chat-response,
             .interactive-input-part,
             .chat-input-part {
-                font-family: ${faFontName}, ${enFontStr}, "Segoe UI Emoji" !important;
+                font-family: ${faFontName}, ${enFontStr}var(--vscode-font-family, system-ui), "Segoe UI Emoji" !important;
+            }
+            .monaco-chat-request, 
+            .monaco-chat-response,
+            .interactive-input-part,
+            .chat-input-part {
                 font-size: ${fs}px !important;
                 line-height: ${lh} !important;
             }

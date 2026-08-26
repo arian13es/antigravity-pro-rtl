@@ -1,6 +1,6 @@
 {
   "name": "antigravity-pro-rtl",
-  "version": "1.0.10",
+  "version": "1.0.11",
   "description": "A Universal Pro RTL (Right-to-Left) patcher with UI settings exclusively for the Antigravity ecosystem.",
   "main": "./bin/index.js",
   "scripts": {
