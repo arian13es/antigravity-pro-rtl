@@ -23,13 +23,16 @@
     }
 
     const staticCSS = `
-        .rtl-widget-container { position: fixed; bottom: 20px; right: 20px; z-index: 999999; display: flex; flex-direction: column; align-items: flex-end; }
+        .rtl-widget-container { 
+            position: fixed; z-index: 999999; 
+            display: flex; flex-direction: column; 
+            touch-action: none; user-select: none; 
+        }
         
         .rtl-widget-panel { 
-            position: absolute; bottom: 60px; right: 0;
+            position: absolute; 
             transform: scale(0.95); opacity: 0; pointer-events: none; 
-            transition: all 0.2s cubic-bezier(0.2, 0.8, 0.2, 1); 
-            transform-origin: bottom right; 
+            transition: opacity 0.2s cubic-bezier(0.2, 0.8, 0.2, 1), transform 0.2s cubic-bezier(0.2, 0.8, 0.2, 1); 
         }
         .rtl-widget-panel.open { transform: scale(1); opacity: 1; pointer-events: auto; }
         
@@ -79,15 +82,17 @@
         .rtl-label { font-size: 13px; font-weight: 500; opacity: 0.9; }
         
         .rtl-widget-trigger { 
-            width: 48px; height: 48px; border-radius: 50%; 
+            width: 46px; height: 46px; border-radius: 50%; 
             background: var(--vscode-button-background, #007acc); 
             color: var(--vscode-button-foreground, #ffffff); 
             display: flex; align-items: center; justify-content: center; 
-            cursor: pointer; box-shadow: 0 4px 16px rgba(0,0,0,0.4); 
-            transition: all 0.2s cubic-bezier(0.2, 0.8, 0.2, 1); 
+            cursor: grab; box-shadow: 0 4px 16px rgba(0,0,0,0.4); 
+            transition: transform 0.2s cubic-bezier(0.2, 0.8, 0.2, 1), background 0.2s; 
+            touch-action: none;
         }
+        .rtl-widget-trigger:active { cursor: grabbing; }
         .rtl-widget-trigger:hover { transform: scale(1.08); background: var(--vscode-button-hoverBackground, #006eb3); }
-        .rtl-widget-trigger svg { transition: transform 0.3s; }
+        .rtl-widget-trigger svg { transition: transform 0.3s; pointer-events: none; }
         .rtl-widget-panel.open ~ .rtl-widget-trigger svg { transform: rotate(90deg); }
     `;
     injectStyle('rtl-widget-style', staticCSS);
@@ -156,6 +161,7 @@
 
         const trigger = document.createElement('div');
         trigger.className = 'rtl-widget-trigger';
+        trigger.title = 'Antigravity RTL (کلیک: باز کردن | درگ: جابجایی)';
         
         const ns = 'http://www.w3.org/2000/svg';
         const svg = document.createElementNS(ns, 'svg');
@@ -187,8 +193,126 @@
         
         trigger.appendChild(svg);
 
+        function applyPosition(x, y) {
+            const margin = 12;
+            const btnSize = 48;
+            const maxX = Math.max(margin, window.innerWidth - btnSize - margin);
+            const maxY = Math.max(margin, window.innerHeight - btnSize - margin);
+            const clampedX = Math.min(Math.max(margin, x), maxX);
+            const clampedY = Math.min(Math.max(margin, y), maxY);
+
+            container.style.left = clampedX + 'px';
+            container.style.top = clampedY + 'px';
+            container.style.right = 'auto';
+            container.style.bottom = 'auto';
+
+            const isBottomHalf = clampedY > (window.innerHeight / 2);
+            const isRightHalf = clampedX > (window.innerWidth / 2);
+
+            if (isBottomHalf) {
+                panel.style.bottom = '54px';
+                panel.style.top = 'auto';
+            } else {
+                panel.style.top = '54px';
+                panel.style.bottom = 'auto';
+            }
+
+            if (isRightHalf) {
+                panel.style.right = '0';
+                panel.style.left = 'auto';
+                panel.style.transformOrigin = isBottomHalf ? 'bottom right' : 'top right';
+                container.style.alignItems = 'flex-end';
+            } else {
+                panel.style.left = '0';
+                panel.style.right = 'auto';
+                panel.style.transformOrigin = isBottomHalf ? 'bottom left' : 'top left';
+                container.style.alignItems = 'flex-start';
+            }
+
+            return { x: clampedX, y: clampedY };
+        }
+
+        try {
+            const savedPos = JSON.parse(localStorage.getItem('smart-rtl-widget-pos') || 'null');
+            if (savedPos && typeof savedPos.x === 'number' && typeof savedPos.y === 'number') {
+                applyPosition(savedPos.x, savedPos.y);
+            } else {
+                applyPosition(window.innerWidth - 64, window.innerHeight - 64);
+            }
+        } catch (e) {
+            applyPosition(window.innerWidth - 64, window.innerHeight - 64);
+        }
+
+        window.addEventListener('resize', () => {
+            const curX = parseInt(container.style.left, 10) || (window.innerWidth - 64);
+            const curY = parseInt(container.style.top, 10) || (window.innerHeight - 64);
+            applyPosition(curX, curY);
+        });
+
+        let isDragging = false;
+        let hasMoved = false;
+        let startPointerX = 0, startPointerY = 0;
+        let startElemX = 0, startElemY = 0;
+
+        function onPointerDown(e) {
+            if (e.button !== undefined && e.button !== 0) return;
+            isDragging = true;
+            hasMoved = false;
+            startPointerX = e.clientX || (e.touches && e.touches[0].clientX) || 0;
+            startPointerY = e.clientY || (e.touches && e.touches[0].clientY) || 0;
+
+            const rect = container.getBoundingClientRect();
+            startElemX = rect.left;
+            startElemY = rect.top;
+
+            window.addEventListener('mousemove', onPointerMove, { passive: false });
+            window.addEventListener('mouseup', onPointerUp);
+            window.addEventListener('touchmove', onPointerMove, { passive: false });
+            window.addEventListener('touchend', onPointerUp);
+        }
+
+        function onPointerMove(e) {
+            if (!isDragging) return;
+            const clientX = e.clientX || (e.touches && e.touches[0].clientX) || 0;
+            const clientY = e.clientY || (e.touches && e.touches[0].clientY) || 0;
+
+            const dx = clientX - startPointerX;
+            const dy = clientY - startPointerY;
+
+            if (!hasMoved && (Math.abs(dx) > 3 || Math.abs(dy) > 3)) {
+                hasMoved = true;
+            }
+
+            if (hasMoved) {
+                if (e.cancelable) e.preventDefault();
+                applyPosition(startElemX + dx, startElemY + dy);
+            }
+        }
+
+        function onPointerUp() {
+            if (!isDragging) return;
+            isDragging = false;
+
+            window.removeEventListener('mousemove', onPointerMove);
+            window.removeEventListener('mouseup', onPointerUp);
+            window.removeEventListener('touchmove', onPointerMove);
+            window.removeEventListener('touchend', onPointerUp);
+
+            if (hasMoved) {
+                const finalX = parseInt(container.style.left, 10);
+                const finalY = parseInt(container.style.top, 10);
+                try {
+                    localStorage.setItem('smart-rtl-widget-pos', JSON.stringify({ x: finalX, y: finalY }));
+                } catch (err) {}
+            }
+        }
+
+        trigger.addEventListener('mousedown', onPointerDown);
+        trigger.addEventListener('touchstart', onPointerDown, { passive: true });
+
         trigger.onclick = (e) => {
             e.stopPropagation();
+            if (hasMoved) return;
             panel.classList.toggle('open');
         };
 
