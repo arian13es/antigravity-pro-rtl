@@ -3,11 +3,13 @@ import fs from 'fs';
 import path from 'path';
 import os from 'os';
 import { fileURLToPath } from 'url';
+import { parseArgs } from 'node:util';
 import picocolors from 'picocolors';
 import ora from 'ora';
 import prompts from 'prompts';
 import * as asar from '@electron/asar';
 import figlet from 'figlet';
+import { findLinuxInstallations, isSnapPath, targetsAt } from './linux-installations.js';
 
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
@@ -34,9 +36,6 @@ function printBanner() {
 }
 
 printBanner();
-
-const args = process.argv.slice(2);
-const isRestore = args.includes('--restore');
 
 function getStandardPath() {
     if (os.platform() === 'darwin') return '/Applications/Antigravity.app/Contents/Resources/app.asar';
@@ -391,37 +390,100 @@ window.addEventListener('DOMContentLoaded', () => {
     }
 }
 
-async function main() {
-    console.log(green('\n⚡ Initializing Antigravity Pro RTL Injector...'));
-    
-    let standardPath = getStandardPath();
-    let idePath = getIDEPath();
-    let geminiPath = getGeminiPath();
-    
-    if (!fs.existsSync(standardPath) && !fs.existsSync(idePath) && !geminiPath) {
-        console.log(yellow(`[?] Automatic scanning failed to locate the applications.`));
-        const response = await prompts({
-            type: 'text',
-            name: 'customPath',
-            message: `Provide the absolute path to the target ('app.asar' or 'app' folder):`
-        });
-        if (!response.customPath || !fs.existsSync(response.customPath)) {
-            console.error(red('\n[!] Invalid trajectory. Process aborted.\n'));
-            process.exit(1);
+function reportSnap(target) {
+    console.error(yellow(`[!] Snap installation is read-only: ${target}`));
+    console.error(yellow('Use a writable Antigravity installation, such as the official Linux tarball, with --path.'));
+}
+
+async function patchTargets(targets, isRestore) {
+    for (const target of targets) {
+        try {
+            const resolved = fs.realpathSync(target.path);
+            if (os.platform() === 'linux' && (isSnapPath(target.path) || isSnapPath(resolved))) {
+                reportSnap(target.path);
+                process.exitCode = 1;
+                continue;
+            }
+            const patch = target.type === 'standard' ? patchStandard : patchIDE;
+            await patch(resolved, isRestore);
+        } catch (error) {
+            console.error(red(`[!] Could not modify ${target.path}: ${error.message}`));
+            process.exitCode = 1;
         }
-        const isAsar = response.customPath.endsWith('.asar');
-        if (isAsar) {
-            await patchStandard(response.customPath, isRestore);
+    }
+}
+
+async function patchCustomPath(input, isRestore) {
+    if (!input) throw new Error('Provide an Antigravity installation path.');
+    const location = path.resolve(input);
+    const resolved = fs.realpathSync(location);
+    if (os.platform() === 'linux' && (isSnapPath(location) || isSnapPath(resolved))) {
+        reportSnap(location);
+        process.exitCode = 1;
+        return;
+    }
+
+    const stat = fs.statSync(resolved);
+    let targets = [];
+    if (stat.isFile() && location.endsWith('.asar')) {
+        targets = [{ type: 'standard', path: resolved }];
+    } else if (stat.isDirectory()) {
+        targets = fs.existsSync(path.join(resolved, 'out', 'vs'))
+            ? [{ type: 'ide', path: resolved }]
+            : [...targetsAt(resolved), ...targetsAt(path.join(resolved, 'resources'))];
+    }
+    if (!targets.length) throw new Error(`No supported Antigravity resources found at ${location}.`);
+    await patchTargets(targets, isRestore);
+}
+
+async function main() {
+    const { values: { restore: isRestore, path: customPath } } = parseArgs({
+        options: {
+            restore: { type: 'boolean' },
+            path: { type: 'string' }
+        }
+    });
+    console.log(green('\n⚡ Initializing Antigravity Pro RTL Injector...'));
+
+    if (customPath !== undefined) {
+        await patchCustomPath(customPath, isRestore);
+    } else if (os.platform() === 'linux') {
+        const { targets, snaps } = findLinuxInstallations();
+        for (const snap of snaps) reportSnap(snap);
+        if (targets.length) {
+            await patchTargets(targets, isRestore);
+        } else if (snaps.length) {
+            process.exitCode = 1;
+            return;
         } else {
-            await patchIDE(response.customPath, isRestore);
+            await promptForPath(isRestore);
         }
     } else {
-        await patchIDE(idePath, isRestore);
-        await patchStandard(standardPath, isRestore);
-        await patchGemini(geminiPath, isRestore);
+        const standardPath = getStandardPath();
+        const idePath = getIDEPath();
+        const geminiPath = getGeminiPath();
+        if (fs.existsSync(standardPath) || fs.existsSync(idePath) || geminiPath) {
+            await patchIDE(idePath, isRestore);
+            await patchStandard(standardPath, isRestore);
+            await patchGemini(geminiPath, isRestore);
+        } else {
+            await promptForPath(isRestore);
+        }
     }
-    
-    console.log(green(bold('\n⚡ Master execution completed. Reboot your applications to initialize the new UI.\n')));
+
+    if (!process.exitCode) {
+        console.log(green(bold('\nRestart the patched applications to apply the changes.\n')));
+    }
+}
+
+async function promptForPath(isRestore) {
+    console.log(yellow('[?] No supported installation was found automatically.'));
+    const { customPath } = await prompts({
+        type: 'text',
+        name: 'customPath',
+        message: "Path to the Antigravity installation, 'app.asar' or 'app' directory"
+    });
+    await patchCustomPath(customPath, isRestore);
 }
 
 main().catch(e => {
