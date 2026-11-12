@@ -22,6 +22,17 @@ antigravity-rtl
 ```
 *(To restore applications to their original factory state, run `antigravity-rtl --restore`)*
 
+### Linux
+
+The patcher looks for Antigravity and Antigravity IDE in common system and user locations and follows launchers on `PATH`. For an extracted tarball or a custom installation, pass the installation directory, its `resources` directory, or the patch target directly.
+
+```bash
+antigravity-rtl --path "/path/to/antigravity"
+antigravity-rtl --restore --path "/path/to/antigravity"
+```
+
+Snap installations are detected but their files are mounted read-only, even with `sudo`. To apply the patch, use a writable installation such as the [official Linux tarball](https://antigravity.google/download).
+
 ## 🤝 Acknowledgements
 This project was heavily rebuilt, modernized, and expanded into a Universal Injector with a highly optimized Pro UI exclusively for the Antigravity ecosystem. The foundational concept and initial injection logic were inspired by the open-source repository [mmnaderi/antigravity-rtl](https://github.com/mmnaderi/antigravity-rtl). 
 
@@ -42,11 +53,22 @@ This project was heavily rebuilt, modernized, and expanded into a Universal Inje
 ```bash
 npm install -g arian13es/antigravity-pro-rtl
 ```
-پس از اتمام نصب، در هر کجای ویندوز تنها با وارد کردن دستور زیر، پچر اجرا می‌شود:
+پس از نصب، پچر را با دستور زیر اجرا کنید:
 ```bash
 antigravity-rtl
 ```
 *(برای بازگردانی برنامه‌ها به حالت اولیه کارخانه، از دستور `antigravity-rtl --restore` استفاده کنید)*
+
+### لینوکس
+
+پچر مسیرهای رایج سیستمی و کاربری را می‌گردد و لانچرهای موجود در `PATH` را دنبال می‌کند. برای نسخهٔ استخراج‌شده از tarball یا نصب در مسیر سفارشی، مسیر پوشهٔ نصب، پوشهٔ `resources` یا خودِ هدف پچ را بدهید.
+
+```bash
+antigravity-rtl --path "/path/to/antigravity"
+antigravity-rtl --restore --path "/path/to/antigravity"
+```
+
+نصب Snap شناسایی می‌شود، اما فایل‌هایش حتی با `sudo` فقط‌خواندنی‌اند. برای اجرای پچ از یک نصب قابل‌نوشتن مثل [tarball رسمی لینوکس](https://antigravity.google/download) استفاده کنید.
 
 ## 🤝 قدردانی
 معماری این ابزار، پنل‌های رابط کاربری و موتورهای تزریق آن به صورت اختصاصی برای این نسخه بازنویسی و مدرن شده‌اند، اما ایدهٔ اولیه و کانسپت اصلیِ این پروژه با الهام از ریپوزیتوریِ متن‌بازِ [mmnaderi/antigravity-rtl](https://github.com/mmnaderi/antigravity-rtl) شکل گرفته است.
