@@ -234,6 +234,8 @@
             user-query,
             .user-query,
             .monaco-chat-request {
+                margin-left: auto !important;
+                margin-right: 0 !important;
                 align-self: flex-end !important;
                 display: flex !important;
                 flex-direction: column !important;
@@ -254,6 +256,8 @@
             [class*="image-preview"],
             [class*="query-actions"],
             .monaco-chat-request .value {
+                margin-left: auto !important;
+                margin-right: 0 !important;
                 align-self: flex-end !important;
                 max-width: 100% !important;
             }
@@ -267,6 +271,8 @@
                 flex-direction: row !important;
                 justify-content: flex-end !important;
                 align-self: flex-end !important;
+                margin-left: auto !important;
+                margin-right: 0 !important;
             }
 
             /* Text formatting inside user prompt bubbles */
@@ -750,6 +756,8 @@
                 } else if (tag === 'USER-QUERY' || (el.classList && el.classList.contains('user-query'))) {
                     // Align user-query to right of central conversation column in LTR flex coordinates
                     el.style.setProperty('direction', 'ltr', 'important');
+                    el.style.setProperty('margin-left', 'auto', 'important');
+                    el.style.setProperty('margin-right', '0', 'important');
                     el.style.setProperty('align-self', 'flex-end', 'important');
                     el.style.setProperty('align-items', 'flex-end', 'important');
                     el.style.setProperty('display', 'flex', 'important');
