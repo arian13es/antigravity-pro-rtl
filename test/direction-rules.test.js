@@ -11,12 +11,8 @@ test('ide-payload.js includes user query anchoring and alignment rules', () => {
     const payloadPath = path.join(__dirname, '..', 'bin', 'ide-payload.js');
     const content = fs.readFileSync(payloadPath, 'utf8');
 
-    // 1. User query container styling (within central conversation column)
+    // 1. User query container styling (preserves native LTR layout direction)
     assert.match(content, /user-query-container/);
-    assert.match(content, /width:\s*100%\s*!important/);
-    assert.match(content, /align-items:\s*flex-end\s*!important/);
-    assert.match(content, /align-self:\s*flex-end\s*!important/);
-    assert.match(content, /max-width:\s*85%\s*!important/);
     assert.match(content, /direction:\s*ltr\s*!important/);
 
     // 2. Query content text formatting
@@ -24,11 +20,7 @@ test('ide-payload.js includes user query anchoring and alignment rules', () => {
     assert.match(content, /text-align:\s*right\s*!important/);
     assert.match(content, /unicode-bidi:\s*isolate\s*!important/);
 
-    // 3. User query actions toolbar
-    assert.match(content, /query-actions/);
-    assert.match(content, /justify-content:\s*flex-end\s*!important/);
-
-    // 4. walkDOM excludes user-query and chat-turn from containerTargets
+    // 3. walkDOM excludes user-query and chat-turn from containerTargets
     assert.doesNotMatch(content, /\['MESSAGE-CONTENT',\s*'MODEL-RESPONSE',\s*'USER-QUERY'\]/);
 });
 

@@ -218,61 +218,16 @@
             }
 
             /* ==========================================================================
-               USER QUERY POSITIONING & ANCHORING (ALIGNED WITH CONVERSATION COLUMN)
+               USER QUERY CONTAINER ISOLATION (PRESERVE NATIVE RIGHT ALIGNMENT)
                ========================================================================== */
-            user-query-container,
-            .user-query-container,
-            [class*="user-query-container"],
-            [class*="user-turn"] {
-                width: 100% !important;
-                display: flex !important;
-                flex-direction: column !important;
-                align-items: flex-end !important;
-                direction: ltr !important; /* Preserves column flexbox coordinate system */
-            }
-
             user-query,
             .user-query,
+            user-query-container,
+            .user-query-container,
+            [class*="user-query"],
+            [class*="user-turn"],
             .monaco-chat-request {
-                margin-left: auto !important;
-                margin-right: 0 !important;
-                align-self: flex-end !important;
-                display: flex !important;
-                flex-direction: column !important;
-                align-items: flex-end !important;
-                width: fit-content !important;
-                max-width: 85% !important;
-                direction: ltr !important;
-            }
-
-            /* User query children: attachment previews, prompt bubbles, action toolbars */
-            user-query > *,
-            .user-query > *,
-            .query-content,
-            [class*="query-content"],
-            [class*="file-preview"],
-            [class*="attachment"],
-            [class*="media-preview"],
-            [class*="image-preview"],
-            [class*="query-actions"],
-            .monaco-chat-request .value {
-                margin-left: auto !important;
-                margin-right: 0 !important;
-                align-self: flex-end !important;
-                max-width: 100% !important;
-            }
-
-            /* User query action toolbar (pencil, copy buttons) */
-            user-query [class*="actions"],
-            .user-query [class*="actions"],
-            .query-actions,
-            [class*="query-actions"] {
-                display: flex !important;
-                flex-direction: row !important;
-                justify-content: flex-end !important;
-                align-self: flex-end !important;
-                margin-left: auto !important;
-                margin-right: 0 !important;
+                direction: ltr !important; /* Preserves native LTR inline-start so user messages anchor right */
             }
 
             /* Text formatting inside user prompt bubbles */
@@ -754,15 +709,8 @@
                 } else if (['MESSAGE-CONTENT', 'MODEL-RESPONSE'].includes(tag)) {
                     containerTargets.push(el);
                 } else if (tag === 'USER-QUERY' || (el.classList && el.classList.contains('user-query'))) {
-                    // Align user-query to right of central conversation column in LTR flex coordinates
+                    // Lock layout direction of user-query to LTR so Gemini's native right-alignment is preserved
                     el.style.setProperty('direction', 'ltr', 'important');
-                    el.style.setProperty('margin-left', 'auto', 'important');
-                    el.style.setProperty('margin-right', '0', 'important');
-                    el.style.setProperty('align-self', 'flex-end', 'important');
-                    el.style.setProperty('align-items', 'flex-end', 'important');
-                    el.style.setProperty('display', 'flex', 'important');
-                    el.style.setProperty('flex-direction', 'column', 'important');
-                    el.style.setProperty('max-width', '85%', 'important');
                 } else if (tag === 'DIV') {
                     const cls = el.className || '';
                     if (typeof cls === 'string') {
@@ -770,16 +718,11 @@
                             blockTargets.push(el);
                         } else if (cls.match(/message-content|model-response|response-container/i)) {
                             containerTargets.push(el);
-                        } else if (cls.match(/user-query-container/i)) {
-                            // Keep turn wrapper spanning 100% of the centered column and aligning items right
-                            el.style.setProperty('width', '100%', 'important');
+                        } else if (cls.match(/user-query|user-turn|chat-turn|user-query-container/i)) {
+                            // Keep turn wrappers in native LTR layout direction
                             el.style.setProperty('direction', 'ltr', 'important');
-                            el.style.setProperty('display', 'flex', 'important');
-                            el.style.setProperty('flex-direction', 'column', 'important');
-                            el.style.setProperty('align-items', 'flex-end', 'important');
                         } else if (cls.match(/monaco-chat-request/i)) {
                             el.style.setProperty('direction', 'ltr', 'important');
-                            el.style.setProperty('align-self', 'flex-end', 'important');
                         } else if (el.children.length === 0 && el.textContent.trim().length > 0) {
                             blockTargets.push(el);
                         }
