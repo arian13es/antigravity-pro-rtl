@@ -176,7 +176,11 @@ async function patchStandard(asarPath, isRestore) {
     const spinner = ora('Acquiring write permissions & establishing backup...').start();
     try {
         fs.accessSync(path.dirname(asarPath), fs.constants.W_OK);
-        if (!fs.existsSync(backupPath)) {
+        if (fs.existsSync(backupPath)) {
+            // Restore from pristine backup first to guarantee clean update with latest payload
+            fs.copyFileSync(backupPath, asarPath);
+        } else {
+            // Establish pristine backup on first patch
             fs.copyFileSync(asarPath, backupPath);
         }
     } catch (e) {
@@ -319,7 +323,11 @@ async function patchGemini(asarPath, isRestore) {
     const spinner = ora('Acquiring write permissions & establishing backup...').start();
     try {
         fs.accessSync(path.dirname(asarPath), fs.constants.W_OK);
-        if (!fs.existsSync(backupPath)) {
+        if (fs.existsSync(backupPath)) {
+            // Restore from pristine backup first to guarantee clean update with latest payload
+            fs.copyFileSync(backupPath, asarPath);
+        } else {
+            // Establish pristine backup on first patch
             fs.copyFileSync(asarPath, backupPath);
         }
     } catch (e) {

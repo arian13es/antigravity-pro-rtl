@@ -216,6 +216,82 @@
             message-content [class*="chips"] {
                 direction: rtl !important;
             }
+
+            /* ==========================================================================
+               USER QUERY POSITIONING & ANCHORING (ALWAYS RIGHT-ANCHORED)
+               ========================================================================== */
+            user-query,
+            .user-query,
+            user-query-container,
+            .user-query-container,
+            [class*="user-query"],
+            [class*="query-container"],
+            [class*="user-turn"],
+            .monaco-chat-request {
+                margin-left: auto !important;
+                margin-right: 0 !important;
+                align-self: flex-end !important;
+                display: flex !important;
+                flex-direction: column !important;
+                align-items: flex-end !important;
+                width: fit-content !important;
+                max-width: 100% !important;
+                direction: ltr !important; /* Preserves flex coordinate system where flex-end is right */
+            }
+
+            /* User query children: attachment previews, prompt bubbles, action toolbars */
+            user-query > *,
+            .user-query > *,
+            [class*="user-query"] > *,
+            .query-content,
+            [class*="query-content"],
+            [class*="file-preview"],
+            [class*="attachment"],
+            [class*="media-preview"],
+            [class*="image-preview"],
+            [class*="query-actions"],
+            .monaco-chat-request .value {
+                margin-left: auto !important;
+                margin-right: 0 !important;
+                align-self: flex-end !important;
+                max-width: 100% !important;
+            }
+
+            /* User query action toolbar (pencil, copy buttons) */
+            user-query [class*="actions"],
+            [class*="user-query"] [class*="actions"],
+            .query-actions,
+            [class*="query-actions"] {
+                display: flex !important;
+                flex-direction: row !important;
+                justify-content: flex-end !important;
+                align-self: flex-end !important;
+                margin-left: auto !important;
+                margin-right: 0 !important;
+            }
+
+            /* Text formatting inside user prompt bubbles */
+            .query-content[dir="rtl"],
+            [class*="query-content"][dir="rtl"],
+            user-query .query-content[dir="rtl"],
+            user-query [dir="rtl"],
+            .monaco-chat-request[dir="rtl"] .value,
+            .monaco-chat-request .value[dir="rtl"] {
+                direction: rtl !important;
+                text-align: right !important;
+                unicode-bidi: isolate !important;
+            }
+
+            .query-content[dir="ltr"],
+            [class*="query-content"][dir="ltr"],
+            user-query .query-content[dir="ltr"],
+            user-query [dir="ltr"],
+            .monaco-chat-request[dir="ltr"] .value,
+            .monaco-chat-request .value[dir="ltr"] {
+                direction: ltr !important;
+                text-align: left !important;
+                unicode-bidi: isolate !important;
+            }
         `;
         if (isRTL) injectStyle('smart-ide-rtl-style', dynamicCSS);
     }
@@ -670,14 +746,37 @@
                     blockTargets.push(el);
                 } else if (tag === 'INPUT' && (!el.type || el.type === 'text' || el.type === 'search')) {
                     blockTargets.push(el);
-                } else if (['MESSAGE-CONTENT', 'MODEL-RESPONSE', 'USER-QUERY'].includes(tag)) {
+                } else if (['MESSAGE-CONTENT', 'MODEL-RESPONSE'].includes(tag)) {
                     containerTargets.push(el);
+                } else if (tag === 'USER-QUERY' || (el.classList && (el.classList.contains('user-query') || el.classList.contains('user-turn')))) {
+                    // Lock user-query layout container to physical right in LTR flex coordinates
+                    el.style.setProperty('direction', 'ltr', 'important');
+                    el.style.setProperty('margin-left', 'auto', 'important');
+                    el.style.setProperty('margin-right', '0', 'important');
+                    el.style.setProperty('align-self', 'flex-end', 'important');
+                    el.style.setProperty('align-items', 'flex-end', 'important');
+                    el.style.setProperty('display', 'flex', 'important');
+                    el.style.setProperty('flex-direction', 'column', 'important');
                 } else if (tag === 'DIV') {
                     const cls = el.className || '';
-                    if (typeof cls === 'string' && cls.match(/message|request|response|prose|query-content|chat-turn/i)) {
-                        containerTargets.push(el);
-                    } else if (el.children.length === 0 && el.textContent.trim().length > 0) {
-                        blockTargets.push(el);
+                    if (typeof cls === 'string') {
+                        if (cls.match(/query-content|user-query-content/i)) {
+                            blockTargets.push(el);
+                        } else if (cls.match(/message-content|model-response|response-container/i)) {
+                            containerTargets.push(el);
+                        } else if (cls.match(/user-turn|user-query-container/i) || (cls.match(/chat-turn/i) && el.querySelector('user-query, [class*="user-query"]'))) {
+                            el.style.setProperty('margin-left', 'auto', 'important');
+                            el.style.setProperty('margin-right', '0', 'important');
+                            el.style.setProperty('align-self', 'flex-end', 'important');
+                            el.style.setProperty('align-items', 'flex-end', 'important');
+                        } else if (cls.match(/monaco-chat-request/i)) {
+                            el.style.setProperty('direction', 'ltr', 'important');
+                            el.style.setProperty('margin-left', 'auto', 'important');
+                            el.style.setProperty('margin-right', '0', 'important');
+                            el.style.setProperty('align-self', 'flex-end', 'important');
+                        } else if (el.children.length === 0 && el.textContent.trim().length > 0) {
+                            blockTargets.push(el);
+                        }
                     }
                 }
 
