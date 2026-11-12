@@ -1,4 +1,4 @@
-/* SMART RTL PATCH - PRO UI */
+/* SMART RTL PATCH - PRO UI (UNIVERSAL ENGINE) */
 (function() {
     let rtlConfig = { faFont: '', enFont: '', codeFont: '', lh: '1.6', fs: '14', isRTL: true, forceRTL: false, fixAtSign: true };
     try {
@@ -17,14 +17,14 @@
         if (!style) {
             style = document.createElement('style');
             style.id = id;
-            document.head.appendChild(style);
+            (document.head || document.documentElement).appendChild(style);
         }
         style.textContent = css;
     }
 
     const staticCSS = `
         .rtl-widget-container { 
-            position: fixed; z-index: 999999; 
+            position: fixed; z-index: 9999999; 
             display: flex; flex-direction: column; 
             touch-action: none; user-select: none; 
         }
@@ -39,22 +39,24 @@
         .rtl-theme-panel { 
             background-color: var(--vscode-editor-background, #1e1e1e); 
             color: var(--vscode-editor-foreground, #cccccc); 
-            border: 1px solid var(--vscode-widget-border, rgba(128,128,128,0.2)); 
+            border: 1px solid var(--vscode-widget-border, rgba(128,128,128,0.25)); 
             padding: 16px 20px; 
             border-radius: 12px; 
             width: 290px; 
-            box-shadow: 0 12px 32px rgba(0,0,0,0.5); 
+            box-shadow: 0 12px 32px rgba(0,0,0,0.55); 
             max-height: 80vh; overflow-y: auto; 
             font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+            box-sizing: border-box;
         }
         
         .rtl-theme-input { 
-            background-color: var(--vscode-input-background, #3c3c3c); 
+            background-color: var(--vscode-input-background, #2d2d2d); 
             color: var(--vscode-input-foreground, #ccc); 
-            border: 1px solid var(--vscode-input-border, transparent); 
+            border: 1px solid var(--vscode-input-border, rgba(255,255,255,0.15)); 
             padding: 6px 8px; border-radius: 6px; 
             width: 140px; font-size: 12px; 
             outline: none; transition: border 0.2s; 
+            box-sizing: border-box;
         }
         .rtl-theme-input:focus { border-color: var(--vscode-focusBorder, #007acc); }
         
@@ -76,7 +78,7 @@
         .rtl-row { 
             display: flex; justify-content: space-between; align-items: center;
             margin-bottom: 14px; padding-bottom: 12px; 
-            border-bottom: 1px solid rgba(128,128,128,0.1); 
+            border-bottom: 1px solid rgba(128,128,128,0.12); 
         }
         .rtl-row:last-child { border-bottom: none; margin-bottom: 0; padding-bottom: 0; }
         .rtl-label { font-size: 13px; font-weight: 500; opacity: 0.9; }
@@ -100,14 +102,14 @@
     function updateDynamicCSS(faFont, enFont, codeFont, lh, fs) {
         let faFontName = "'PersianOnlyFont'";
         let faFontRule = '';
-        const persianUnicodeRange = 'U+0600-06FF, U+FB50-FDFF, U+FE70-FEFF';
+        const persianUnicodeRange = 'U+0600-06FF, U+0750-077F, U+08A0-08FF, U+FB50-FDFF, U+FE70-FEFF, U+200C, U+200D';
         
         if (faFont) {
             faFontName = `'UserPersianFont', 'PersianOnlyFont'`;
             let baseFaFont = faFont.replace(/[-\s]?Regular$/i, '');
             faFontRule = `
-                @font-face { font-family: 'UserPersianFont'; src: local('${faFont}'), local('${baseFaFont}'); font-weight: 400; unicode-range: ${persianUnicodeRange}; }
-                @font-face { font-family: 'UserPersianFont'; src: local('${baseFaFont} Bold'), local('${baseFaFont}-Bold'); font-weight: 700; unicode-range: ${persianUnicodeRange}; }
+                @font-face { font-family: 'UserPersianFont'; src: local('${faFont}'), local('${baseFaFont}'); font-weight: 400; unicode-range: ${persianUnicodeRange}; font-display: swap; }
+                @font-face { font-family: 'UserPersianFont'; src: local('${baseFaFont} Bold'), local('${baseFaFont}-Bold'); font-weight: 700; unicode-range: ${persianUnicodeRange}; font-display: swap; }
             `;
         }
         
@@ -120,25 +122,99 @@
                 src: url('data:font/woff2;base64,__FONT_BASE64__') format('woff2');
                 font-weight: 100 900;
                 unicode-range: ${persianUnicodeRange};
+                font-display: swap;
             }
+            
+            /* Universal font application: Antigravity IDE, Standard App, and Gemini Desktop */
             .smart-rtl-text-node, 
             .monaco-chat-request, 
             .monaco-chat-response,
             .interactive-input-part,
-            .chat-input-part {
-                font-family: ${faFontName}, ${enFontStr}var(--vscode-font-family, system-ui), "Segoe UI Emoji" !important;
+            .chat-input-part,
+            message-content,
+            .message-content,
+            model-response,
+            user-query,
+            .conversation-container,
+            .response-container,
+            .query-content,
+            rich-textarea,
+            .text-input-field {
+                font-family: ${faFontName}, ${enFontStr}var(--vscode-font-family, system-ui), "Segoe UI Emoji", sans-serif !important;
             }
+
+            .smart-rtl-text-node,
             .monaco-chat-request, 
             .monaco-chat-response,
             .interactive-input-part,
-            .chat-input-part {
+            .chat-input-part,
+            message-content p,
+            message-content li,
+            .message-content p,
+            .message-content li {
                 font-size: ${fs}px !important;
                 line-height: ${lh} !important;
             }
+
             .monaco-chat-request .value, 
             .interactive-session .value {
                 font-family: inherit !important;
                 font-size: inherit !important;
+            }
+
+            /* Directional alignment contracts */
+            [dir="rtl"] {
+                direction: rtl !important;
+                text-align: right !important;
+            }
+
+            [dir="ltr"] {
+                direction: ltr !important;
+                text-align: left !important;
+            }
+
+            p[dir="rtl"], h1[dir="rtl"], h2[dir="rtl"], h3[dir="rtl"], h4[dir="rtl"], h5[dir="rtl"], h6[dir="rtl"] {
+                direction: rtl !important;
+                text-align: right !important;
+                unicode-bidi: isolate !important;
+            }
+
+            li[dir="rtl"] {
+                direction: rtl !important;
+                text-align: right !important;
+                unicode-bidi: isolate !important;
+            }
+
+            ol[dir="rtl"], ul[dir="rtl"] {
+                direction: rtl !important;
+                text-align: right !important;
+                padding-right: 28px !important;
+                padding-left: 0 !important;
+            }
+
+            /* Mathematical formulas, code blocks and monospace preservation */
+            pre, code, kbd, samp,
+            pre *, code *,
+            .monaco-editor .view-lines,
+            .katex, .katex *,
+            mjx-container, mjx-container *,
+            math, math * {
+                direction: ltr !important;
+                text-align: left !important;
+                unicode-bidi: isolate !important;
+                font-family: var(--vscode-editor-font-family, Consolas, "Courier New", monospace) !important;
+            }
+
+            .katex-display, .katex-display * {
+                direction: ltr !important;
+                text-align: center !important;
+            }
+
+            /* Suggestion chips / Action pills */
+            .response-container [class*="chip-container"],
+            .response-container [class*="suggestion"],
+            message-content [class*="chips"] {
+                direction: rtl !important;
             }
         `;
         if (isRTL) injectStyle('smart-ide-rtl-style', dynamicCSS);
@@ -196,8 +272,10 @@
         function applyPosition(x, y) {
             const margin = 12;
             const btnSize = 48;
-            const maxX = Math.max(margin, window.innerWidth - btnSize - margin);
-            const maxY = Math.max(margin, window.innerHeight - btnSize - margin);
+            const winW = window.innerWidth || 1200;
+            const winH = window.innerHeight || 900;
+            const maxX = Math.max(margin, winW - btnSize - margin);
+            const maxY = Math.max(margin, winH - btnSize - margin);
             const clampedX = Math.min(Math.max(margin, x), maxX);
             const clampedY = Math.min(Math.max(margin, y), maxY);
 
@@ -206,8 +284,8 @@
             container.style.right = 'auto';
             container.style.bottom = 'auto';
 
-            const isBottomHalf = clampedY > (window.innerHeight / 2);
-            const isRightHalf = clampedX > (window.innerWidth / 2);
+            const isBottomHalf = clampedY > (winH / 2);
+            const isRightHalf = clampedX > (winW / 2);
 
             if (isBottomHalf) {
                 panel.style.bottom = '54px';
@@ -237,15 +315,15 @@
             if (savedPos && typeof savedPos.x === 'number' && typeof savedPos.y === 'number') {
                 applyPosition(savedPos.x, savedPos.y);
             } else {
-                applyPosition(window.innerWidth - 64, window.innerHeight - 64);
+                applyPosition((window.innerWidth || 1200) - 68, (window.innerHeight || 900) - 68);
             }
         } catch (e) {
-            applyPosition(window.innerWidth - 64, window.innerHeight - 64);
+            applyPosition((window.innerWidth || 1200) - 68, (window.innerHeight || 900) - 68);
         }
 
         window.addEventListener('resize', () => {
-            const curX = parseInt(container.style.left, 10) || (window.innerWidth - 64);
-            const curY = parseInt(container.style.top, 10) || (window.innerHeight - 64);
+            const curX = parseInt(container.style.left, 10) || ((window.innerWidth || 1200) - 68);
+            const curY = parseInt(container.style.top, 10) || ((window.innerHeight || 900) - 68);
             applyPosition(curX, curY);
         });
 
@@ -456,7 +534,7 @@
 
         container.appendChild(panel);
         container.appendChild(trigger);
-        document.body.appendChild(container);
+        (document.body || document.documentElement).appendChild(container);
 
         const saveConfig = () => {
             try {
@@ -513,79 +591,148 @@
     if (document.body) createWidget();
     else window.addEventListener('DOMContentLoaded', createWidget);
 
+    /* MATHEMATICAL DIRECTION CLASSIFIER (RATIO & THRESHOLD HEURISTIC) */
+    const RTL_REGEX = /[\u0600-\u06FF\u0750-\u077F\u08A0-\u08FF\uFB50-\uFDFF\uFE70-\uFEFF\u0590-\u05FF]/g;
+    const LTR_REGEX = /[A-Za-z]/g;
+
+    function detectDirection(text) {
+        if (!text) return null;
+        const clean = text.replace(/[\u200B-\u200F\uFEFF]/g, '').trim();
+        if (!clean) return null;
+
+        if (forceRTL) return 'rtl';
+
+        const rtlMatches = clean.match(RTL_REGEX);
+        const ltrMatches = clean.match(LTR_REGEX);
+
+        const rtlCount = rtlMatches ? rtlMatches.length : 0;
+        const ltrCount = ltrMatches ? ltrMatches.length : 0;
+
+        if (rtlCount === 0 && ltrCount === 0) return null;
+
+        // In Persian technical prose, formulas and Latin variables (e.g. K, T, s, u(t))
+        // or parenthetical English terms are frequently mixed.
+        // If RTL characters are present and represent at least 25% of letters OR exceed 3 chars:
+        if (rtlCount > 0 && (rtlCount >= ltrCount * 0.25 || rtlCount >= 3)) {
+            return 'rtl';
+        }
+
+        if (ltrCount > 0) {
+            return 'ltr';
+        }
+
+        return null;
+    }
+
+    function applyElementDir(el, dir) {
+        if (!dir) return;
+
+        if (!el.classList.contains('smart-rtl-text-node')) {
+            el.classList.add('smart-rtl-text-node');
+        }
+
+        if (el.getAttribute('dir') !== dir) {
+            el.setAttribute('dir', dir);
+        }
+
+        if (dir === 'rtl') {
+            el.style.setProperty('direction', 'rtl', 'important');
+            el.style.setProperty('text-align', 'right', 'important');
+            el.style.setProperty('unicode-bidi', 'isolate', 'important');
+        } else {
+            el.style.setProperty('direction', 'ltr', 'important');
+            el.style.setProperty('text-align', 'left', 'important');
+            el.style.setProperty('unicode-bidi', 'isolate', 'important');
+        }
+    }
+
     function updateDir() {
         if (!isRTL) return;
-        
-        const allElements = document.querySelectorAll('*');
-        const textElements = [];
-        
-        for (let i = 0; i < allElements.length; i++) {
-            const el = allElements[i];
-            const tag = el.tagName;
-            
-            if (['P', 'LI', 'H1', 'H2', 'H3', 'H4', 'SPAN', 'TEXTAREA'].includes(tag)) {
-                textElements.push(el);
-                continue;
-            }
-            if (el.getAttribute('contenteditable') === 'true') {
-                textElements.push(el);
-                continue;
-            }
-            if (tag === 'DIV') {
-                const cls = el.className || '';
-                if (typeof cls === 'string' && cls.match(/message|value|content|prose|chat|request|response/i)) {
-                    textElements.push(el);
-                    continue;
+
+        const blockTargets = [];
+        const containerTargets = [];
+
+        function walkDOM(node) {
+            if (!node) return;
+            if (node.nodeType === Node.ELEMENT_NODE) {
+                const el = node;
+                if (el.classList && el.classList.contains('rtl-widget-container')) return;
+
+                const tag = el.tagName;
+                if (['PRE', 'CODE', 'SVG', 'MATH', 'SCRIPT', 'STYLE'].includes(tag)) return;
+                if (el.classList && (el.classList.contains('katex') || el.classList.contains('monaco-editor'))) {
+                    if (!el.closest('.interactive-input-part, .chat-input-part')) return;
                 }
-                if (el.children.length === 0 && el.textContent.trim().length > 0) {
-                    textElements.push(el);
-                    continue;
+
+                if (['P', 'LI', 'H1', 'H2', 'H3', 'H4', 'H5', 'H6', 'BLOCKQUOTE', 'TD', 'TH'].includes(tag)) {
+                    blockTargets.push(el);
+                } else if (el.getAttribute('contenteditable') === 'true' || tag === 'TEXTAREA') {
+                    blockTargets.push(el);
+                } else if (tag === 'INPUT' && (!el.type || el.type === 'text' || el.type === 'search')) {
+                    blockTargets.push(el);
+                } else if (['MESSAGE-CONTENT', 'MODEL-RESPONSE', 'USER-QUERY'].includes(tag)) {
+                    containerTargets.push(el);
+                } else if (tag === 'DIV') {
+                    const cls = el.className || '';
+                    if (typeof cls === 'string' && cls.match(/message|request|response|prose|query-content|chat-turn/i)) {
+                        containerTargets.push(el);
+                    } else if (el.children.length === 0 && el.textContent.trim().length > 0) {
+                        blockTargets.push(el);
+                    }
+                }
+
+                if (el.shadowRoot) {
+                    walkDOM(el.shadowRoot);
+                }
+            }
+
+            const children = node.children || node.childNodes;
+            if (children) {
+                for (let i = 0; i < children.length; i++) {
+                    walkDOM(children[i]);
                 }
             }
         }
-        
-        textElements.forEach(el => {
-            if (el.closest('.rtl-widget-container')) return;
-            if (el.closest('pre, code')) return;
-            if (el.closest('.monaco-editor') && !el.closest('.interactive-input-part, .chat-input-part, [class*="message"], [class*="request"]')) return;
-            
-            const text = el.textContent.replace(/[\u200B-\u200F\uFEFF]/g, '').trim();
-            if (!text) return;
-            
-            let dir = 'auto';
-            if (forceRTL) {
-                dir = 'rtl';
-            } else {
-                const firstChar = text.match(/[A-Za-z\u0600-\u06FF]/);
-                if (firstChar) {
-                    dir = /[\u0600-\u06FF]/.test(firstChar[0]) ? 'rtl' : 'ltr';
-                }
-            }
-            
-            if (!el.classList.contains('smart-rtl-text-node')) {
-                el.classList.add('smart-rtl-text-node');
-            }
-            
-            if (el.getAttribute('dir') !== dir) {
-                el.setAttribute('dir', dir);
-                
+
+        walkDOM(document.body || document.documentElement);
+
+        // 1. Set container-level alignment based on full aggregate text (immune to child code/math poisoning)
+        for (let i = 0; i < containerTargets.length; i++) {
+            const cEl = containerTargets[i];
+            const cText = cEl.textContent;
+            if (!cText || !cText.trim()) continue;
+            const dir = detectDirection(cText);
+            if (dir) {
+                cEl.setAttribute('dir', dir);
+                cEl.style.setProperty('direction', dir, 'important');
                 if (dir === 'rtl') {
-                    el.style.setProperty('text-align', 'right', 'important');
-                    el.style.setProperty('direction', 'rtl', 'important');
-                    el.style.setProperty('unicode-bidi', 'isolate', 'important');
-                } else {
-                    el.style.setProperty('text-align', 'left', 'important');
-                    el.style.setProperty('direction', 'ltr', 'important');
-                    el.style.setProperty('unicode-bidi', 'isolate', 'important');
-                }
-                
-                const bubble = el.closest('[class*="message"], [class*="request"], [class*="bubble"], .value');
-                if (bubble) {
-                    bubble.setAttribute('dir', dir);
-                    bubble.style.setProperty('direction', dir, 'important');
+                    cEl.style.setProperty('text-align', 'right', 'important');
                 }
             }
-        });
+        }
+
+        // 2. Set individual block-level alignment and list hierarchy
+        for (let i = 0; i < blockTargets.length; i++) {
+            const el = blockTargets[i];
+            const text = el.textContent;
+            if (!text || !text.trim()) continue;
+
+            const dir = detectDirection(text);
+            if (dir) {
+                applyElementDir(el, dir);
+
+                if (el.tagName === 'LI' && dir === 'rtl') {
+                    const parentList = el.closest('ul, ol');
+                    if (parentList && parentList.getAttribute('dir') !== 'rtl') {
+                        parentList.setAttribute('dir', 'rtl');
+                        parentList.style.setProperty('direction', 'rtl', 'important');
+                        parentList.style.setProperty('text-align', 'right', 'important');
+                        parentList.style.setProperty('padding-right', '28px', 'important');
+                        parentList.style.setProperty('padding-left', '0', 'important');
+                    }
+                }
+            }
+        }
     }
 
     document.addEventListener('input', updateDir, { capture: true });
@@ -608,11 +755,12 @@
         }
     });
     
-    if (document.body) {
-        observer.observe(document.body, { childList: true, subtree: true, characterData: true });
+    const rootTarget = document.body || document.documentElement;
+    if (rootTarget) {
+        observer.observe(rootTarget, { childList: true, subtree: true, characterData: true });
     } else {
         document.addEventListener('DOMContentLoaded', () => {
-            observer.observe(document.body, { childList: true, subtree: true, characterData: true });
+            observer.observe(document.body || document.documentElement, { childList: true, subtree: true, characterData: true });
         });
     }
 

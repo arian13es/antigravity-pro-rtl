@@ -217,8 +217,6 @@ async function patchStandard(asarPath, isRestore) {
 
         const idePayloadPath = path.join(__dirname, 'ide-payload.js');
         const ideCode = fs.readFileSync(idePayloadPath, 'utf8');
-
-        // Safely serialize the code to avoid template literal escaping issues in Electron
         const ideCodeString = JSON.stringify(ideCode);
 
         const payload = `/* ANTIGRAVITY PRO RTL PATCH */
@@ -262,9 +260,9 @@ win.webContents.on('dom-ready', () => {
         return;
     }
 
-    spinner.text = 'Rebuilding core ASAR package...';
+    spinner.text = 'Rebuilding core ASAR package (preserving native modules)...';
     try {
-        await asar.createPackage(extractDir, asarPath);
+        await asar.createPackageWithOptions(extractDir, asarPath, { unpack: '**/*.node' });
         fs.rmSync(extractDir, { recursive: true, force: true });
         spinner.succeed('★ Standard Antigravity ecosystem successfully overhauled!');
     } catch (e) {
@@ -294,6 +292,14 @@ async function patchGemini(asarPath, isRestore) {
     }
     console.log(blue(`\n[✓] Target locked: Gemini App located at ${asarPath}`));
     
+    // Terminate any running Gemini process instances to avoid Windows write-lock violations
+    if (os.platform() === 'win32') {
+        try {
+            const { execSync } = await import('child_process');
+            execSync('taskkill /F /IM Gemini.exe /IM GeminiAppLauncher.exe 2>nul || exit 0', { stdio: 'ignore' });
+        } catch (e) {}
+    }
+
     const backupPath = asarPath + '.bak';
     if (isRestore) {
         if (!fs.existsSync(backupPath)) {
@@ -336,16 +342,16 @@ async function patchGemini(asarPath, isRestore) {
         return;
     }
 
-    spinner.text = 'Injecting Unified RTL module into Gemini...';
+    spinner.text = 'Injecting Unified RTL module into Gemini core architecture...';
     try {
-        const preloadPath = path.join(extractDir, 'src', 'preload.js');
-        if (!fs.existsSync(preloadPath)) {
-            throw new Error('src/preload.js missing. The target architecture is incompatible.');
+        const mainPath = path.join(extractDir, 'src', 'main.js');
+        if (!fs.existsSync(mainPath)) {
+            throw new Error('src/main.js missing. The target architecture is incompatible.');
         }
 
-        let preloadCode = fs.readFileSync(preloadPath, 'utf8');
+        let mainCode = fs.readFileSync(mainPath, 'utf8');
         
-        if (preloadCode.includes('/* ANTIGRAVITY PRO RTL PATCH */')) {
+        if (mainCode.includes('/* ANTIGRAVITY PRO RTL PATCH */')) {
             spinner.succeed('Gemini is already operating on the patched architecture.');
             fs.rmSync(extractDir, { recursive: true, force: true });
             return;
@@ -353,26 +359,77 @@ async function patchGemini(asarPath, isRestore) {
 
         const idePayloadPath = path.join(__dirname, 'ide-payload.js');
         const ideCode = fs.readFileSync(idePayloadPath, 'utf8');
+        const ideCodeString = JSON.stringify(ideCode);
 
-        const fontPath = path.join(__dirname, 'Vazirmatn-Variable.woff2');
-        let fontBase64 = '';
-        if (fs.existsSync(fontPath)) {
-            fontBase64 = fs.readFileSync(fontPath).toString('base64');
+        // Copy offline font directly into extracted src
+        const fontSource = path.join(__dirname, 'Vazirmatn-Variable.woff2');
+        const fontDest = path.join(extractDir, 'src', 'Vazirmatn-Variable.woff2');
+        if (fs.existsSync(fontSource)) {
+            fs.copyFileSync(fontSource, fontDest);
         }
-        
-        let injectedScript = ideCode.replace(/__FONT_BASE64__/g, fontBase64);
 
-        const payload = `\n/* ANTIGRAVITY PRO RTL PATCH */
-window.addEventListener('DOMContentLoaded', () => {
-    try {
-        ${injectedScript}
-    } catch(e) {
-        console.error("Failed to inject RTL features:", e);
+        // Anchor in Gemini main.js where the primary WebContentsView is registered
+        const anchor = 'o.contentView.addChildView(d),k=d;';
+        if (!mainCode.includes(anchor)) {
+            throw new Error('Target injection anchor in Gemini main.js not found.');
+        }
+
+        const injectionPayload = `/* ANTIGRAVITY PRO RTL PATCH */
+o.contentView.addChildView(d),k=d;
+try {
+    const _rtlFs = require('fs');
+    const _rtlPath = require('path');
+    const _fontFile = _rtlPath.join(__dirname, 'Vazirmatn-Variable.woff2');
+    let _fontB64 = '';
+    if (_rtlFs.existsSync(_fontFile)) {
+        _fontB64 = _rtlFs.readFileSync(_fontFile).toString('base64');
     }
-});`;
+    const _injectedCode = ${ideCodeString}.replace(/__FONT_BASE64__/g, _fontB64);
 
-        preloadCode += payload;
-        fs.writeFileSync(preloadPath, preloadCode);
+    if (d && d.webContents && d.webContents.session) {
+        d.webContents.session.webRequest.onHeadersReceived((details, callback) => {
+            const rh = Object.assign({}, details.responseHeaders);
+            for (const k of Object.keys(rh)) {
+                if (k.toLowerCase() === 'content-security-policy') {
+                    rh[k] = rh[k].map(csp => 
+                        csp.replace(/font-src([^;]*)/i, "font-src$1 data: https://fonts.gstatic.com")
+                           .replace(/style-src([^;]*)/i, "style-src$1 'unsafe-inline'")
+                    );
+                }
+            }
+            callback({ responseHeaders: rh });
+        });
+    }
+
+    const _execRTL = () => {
+        try {
+            if (d && d.webContents && !d.webContents.isDestroyed()) {
+                d.webContents.executeJavaScript(_injectedCode).catch(err => {
+                    console.error('[Smart-RTL] executeJavaScript failed:', err);
+                });
+            }
+        } catch(e) {}
+    };
+
+    d.webContents.on('dom-ready', _execRTL);
+    d.webContents.on('did-finish-load', _execRTL);
+} catch(_rtlErr) {
+    console.error('[Smart-RTL] Injection failed:', _rtlErr);
+}`;
+
+        mainCode = mainCode.replace(anchor, injectionPayload);
+        fs.writeFileSync(mainPath, mainCode);
+
+        // Sanitize src/preload.js if any legacy corrupt patch payload exists
+        const preloadPath = path.join(extractDir, 'src', 'preload.js');
+        if (fs.existsSync(preloadPath)) {
+            let preloadCode = fs.readFileSync(preloadPath, 'utf8');
+            const patchIdx = preloadCode.indexOf('/* ANTIGRAVITY PRO RTL PATCH */');
+            if (patchIdx !== -1) {
+                preloadCode = preloadCode.substring(0, patchIdx).trim();
+                fs.writeFileSync(preloadPath, preloadCode);
+            }
+        }
     } catch (e) {
         spinner.fail('Module injection failed.');
         console.error(red(e.message));
@@ -380,9 +437,9 @@ window.addEventListener('DOMContentLoaded', () => {
         return;
     }
 
-    spinner.text = 'Rebuilding Gemini ASAR package...';
+    spinner.text = 'Rebuilding Gemini ASAR package (preserving native modules)...';
     try {
-        await asar.createPackage(extractDir, asarPath);
+        await asar.createPackageWithOptions(extractDir, asarPath, { unpack: '**/*.node' });
         fs.rmSync(extractDir, { recursive: true, force: true });
         spinner.succeed('★ Gemini App successfully overhauled!');
     } catch (e) {
