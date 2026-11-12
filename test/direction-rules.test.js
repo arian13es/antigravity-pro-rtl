@@ -11,11 +11,12 @@ test('ide-payload.js includes user query anchoring and alignment rules', () => {
     const payloadPath = path.join(__dirname, '..', 'bin', 'ide-payload.js');
     const content = fs.readFileSync(payloadPath, 'utf8');
 
-    // 1. User query container styling
-    assert.match(content, /user-query,\s*\.user-query,\s*user-query-container/);
+    // 1. User query container styling (within central conversation column)
+    assert.match(content, /user-query-container/);
+    assert.match(content, /width:\s*100%\s*!important/);
+    assert.match(content, /align-items:\s*flex-end\s*!important/);
     assert.match(content, /align-self:\s*flex-end\s*!important/);
-    assert.match(content, /margin-left:\s*auto\s*!important/);
-    assert.match(content, /margin-right:\s*0\s*!important/);
+    assert.match(content, /max-width:\s*85%\s*!important/);
     assert.match(content, /direction:\s*ltr\s*!important/);
 
     // 2. Query content text formatting
