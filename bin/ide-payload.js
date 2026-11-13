@@ -228,6 +228,43 @@
             [class*="user-turn"],
             .monaco-chat-request {
                 direction: ltr !important; /* Preserves native LTR inline-start so user messages anchor right */
+                display: flex !important;
+                flex-direction: column !important;
+                align-items: flex-end !important;
+            }
+
+            /* Every child component inside user-query (thumbnails, query bubbles, actions)
+               must maintain strict right-edge alignment (X = 679) flush with each other */
+            user-query > *,
+            .user-query > *,
+            .query-content,
+            [class*="query-content"],
+            .user-query-bubble-with-background,
+            [class*="file-preview"],
+            [class*="attachment"],
+            [class*="media-preview"],
+            [class*="image-preview"],
+            [class*="query-actions"],
+            .monaco-chat-request .value {
+                align-self: flex-end !important;
+                margin-left: auto !important;
+                margin-right: 0 !important;
+                margin-inline-start: auto !important;
+                margin-inline-end: 0 !important;
+                max-width: 100% !important;
+            }
+
+            /* Action toolbar buttons (edit, copy) inside user queries */
+            user-query [class*="actions"],
+            .user-query [class*="actions"],
+            .query-actions,
+            [class*="query-actions"] {
+                display: flex !important;
+                flex-direction: row !important;
+                justify-content: flex-end !important;
+                align-self: flex-end !important;
+                margin-left: auto !important;
+                margin-right: 0 !important;
             }
 
             /* Text formatting inside user prompt bubbles */
@@ -240,6 +277,9 @@
                 direction: rtl !important;
                 text-align: right !important;
                 unicode-bidi: isolate !important;
+                align-self: flex-end !important;
+                margin-left: auto !important;
+                margin-right: 0 !important;
             }
 
             .query-content[dir="ltr"],
@@ -251,6 +291,9 @@
                 direction: ltr !important;
                 text-align: left !important;
                 unicode-bidi: isolate !important;
+                align-self: flex-end !important;
+                margin-left: auto !important;
+                margin-right: 0 !important;
             }
         `;
         if (isRTL) injectStyle('smart-ide-rtl-style', dynamicCSS);
@@ -680,6 +723,13 @@
             el.style.setProperty('text-align', 'left', 'important');
             el.style.setProperty('unicode-bidi', 'isolate', 'important');
         }
+
+        // If inside user-query or a query bubble, enforce right-edge flush alignment
+        if (el.closest && el.closest('user-query, .user-query, [class*="user-query"], [class*="user-turn"], .monaco-chat-request')) {
+            el.style.setProperty('align-self', 'flex-end', 'important');
+            el.style.setProperty('margin-left', 'auto', 'important');
+            el.style.setProperty('margin-right', '0', 'important');
+        }
     }
 
     function updateDir() {
@@ -709,13 +759,29 @@
                 } else if (['MESSAGE-CONTENT', 'MODEL-RESPONSE'].includes(tag)) {
                     containerTargets.push(el);
                 } else if (tag === 'USER-QUERY' || (el.classList && el.classList.contains('user-query'))) {
-                    // Lock layout direction of user-query to LTR so Gemini's native right-alignment is preserved
+                    // Lock layout direction of user-query to LTR flex column aligned to flex-end
                     el.style.setProperty('direction', 'ltr', 'important');
+                    el.style.setProperty('display', 'flex', 'important');
+                    el.style.setProperty('flex-direction', 'column', 'important');
+                    el.style.setProperty('align-items', 'flex-end', 'important');
                 } else if (tag === 'DIV') {
                     const cls = el.className || '';
                     if (typeof cls === 'string') {
                         if (cls.match(/query-content|user-query-content/i)) {
+                            el.style.setProperty('align-self', 'flex-end', 'important');
+                            el.style.setProperty('margin-left', 'auto', 'important');
+                            el.style.setProperty('margin-right', '0', 'important');
                             blockTargets.push(el);
+                        } else if (cls.match(/file-preview|attachment|media-preview|image-preview/i)) {
+                            el.style.setProperty('align-self', 'flex-end', 'important');
+                            el.style.setProperty('margin-left', 'auto', 'important');
+                            el.style.setProperty('margin-right', '0', 'important');
+                        } else if (cls.match(/query-actions/i)) {
+                            el.style.setProperty('align-self', 'flex-end', 'important');
+                            el.style.setProperty('margin-left', 'auto', 'important');
+                            el.style.setProperty('margin-right', '0', 'important');
+                            el.style.setProperty('display', 'flex', 'important');
+                            el.style.setProperty('justify-content', 'flex-end', 'important');
                         } else if (cls.match(/message-content|model-response|response-container/i)) {
                             containerTargets.push(el);
                         } else if (cls.match(/user-query|user-turn|chat-turn|user-query-container/i)) {

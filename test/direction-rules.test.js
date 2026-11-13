@@ -15,12 +15,19 @@ test('ide-payload.js includes user query anchoring and alignment rules', () => {
     assert.match(content, /user-query-container/);
     assert.match(content, /direction:\s*ltr\s*!important/);
 
-    // 2. Query content text formatting
+    // 2. Query content text formatting and strict flush right alignment
     assert.match(content, /\.query-content\[dir="rtl"\]/);
     assert.match(content, /text-align:\s*right\s*!important/);
     assert.match(content, /unicode-bidi:\s*isolate\s*!important/);
+    assert.match(content, /align-self:\s*flex-end\s*!important/);
+    assert.match(content, /margin-left:\s*auto\s*!important/);
+    assert.match(content, /margin-right:\s*0\s*!important/);
 
-    // 3. walkDOM excludes user-query and chat-turn from containerTargets
+    // 3. User query container flex column setup
+    assert.match(content, /align-items:\s*flex-end\s*!important/);
+    assert.match(content, /flex-direction:\s*column\s*!important/);
+
+    // 4. walkDOM excludes user-query and chat-turn from containerTargets
     assert.doesNotMatch(content, /\['MESSAGE-CONTENT',\s*'MODEL-RESPONSE',\s*'USER-QUERY'\]/);
 });
 
