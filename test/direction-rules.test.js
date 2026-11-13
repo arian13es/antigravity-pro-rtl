@@ -29,6 +29,10 @@ test('ide-payload.js includes user query anchoring and alignment rules', () => {
 
     // 4. walkDOM excludes user-query and chat-turn from containerTargets
     assert.doesNotMatch(content, /\['MESSAGE-CONTENT',\s*'MODEL-RESPONSE',\s*'USER-QUERY'\]/);
+
+    // 5. Suggestion containers and chips stay constrained to center column
+    assert.match(content, /followup-container/);
+    assert.match(content, /max-width:\s*768px\s*!important/);
 });
 
 test('direction classification heuristic correctly categorizes technical Persian prompts', () => {

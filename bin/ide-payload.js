@@ -210,11 +210,61 @@
                 text-align: center !important;
             }
 
-            /* Suggestion chips / Action pills */
+            /* ==========================================================================
+               SUGGESTION CHIPS & FOLLOW-UP PROMPTS CONSTRAINTS (PRESERVE CENTER COLUMN)
+               ========================================================================== */
             .response-container [class*="chip-container"],
             .response-container [class*="suggestion"],
-            message-content [class*="chips"] {
+            .response-container [class*="followup"],
+            .response-container [class*="follow-up"],
+            model-response [class*="chip-container"],
+            model-response [class*="suggestion"],
+            model-response [class*="followup"],
+            model-response [class*="follow-up"],
+            chat-turn [class*="suggestion"],
+            chat-turn [class*="followup"],
+            chat-turn [class*="follow-up"],
+            [class*="suggestion-container"],
+            [class*="suggestions-container"],
+            [class*="followup-container"],
+            [class*="follow-up-container"] {
+                max-width: 768px !important;
+                width: 100% !important;
+                margin-left: auto !important;
+                margin-right: auto !important;
+                box-sizing: border-box !important;
+            }
+
+            /* Suggestion title / question text */
+            [class*="suggestion"] p,
+            [class*="followup"] p,
+            [class*="follow-up"] p,
+            [class*="suggestion-container"] p,
+            [class*="followup-container"] p {
+                max-width: 100% !important;
+                box-sizing: border-box !important;
+            }
+
+            /* Chip buttons flex alignment */
+            [class*="chip-container"],
+            [class*="chips"],
+            [class*="suggestion-list"],
+            [class*="suggestions-list"] {
+                display: flex !important;
+                flex-direction: row !important;
+                flex-wrap: wrap !important;
+                justify-content: flex-start !important;
+                gap: 8px !important;
+                max-width: 100% !important;
+                box-sizing: border-box !important;
+            }
+
+            [dir="rtl"] [class*="chip-container"],
+            [dir="rtl"] [class*="chips"],
+            [dir="rtl"] [class*="suggestion-list"],
+            [dir="rtl"] [class*="suggestions-list"] {
                 direction: rtl !important;
+                justify-content: flex-start !important;
             }
 
             /* ==========================================================================
@@ -782,6 +832,12 @@
                             el.style.setProperty('margin-right', '0', 'important');
                             el.style.setProperty('display', 'flex', 'important');
                             el.style.setProperty('justify-content', 'flex-end', 'important');
+                        } else if (cls.match(/suggestion|followup|follow-up/i)) {
+                            el.style.setProperty('max-width', '768px', 'important');
+                            el.style.setProperty('width', '100%', 'important');
+                            el.style.setProperty('margin-left', 'auto', 'important');
+                            el.style.setProperty('margin-right', 'auto', 'important');
+                            el.style.setProperty('box-sizing', 'border-box', 'important');
                         } else if (cls.match(/message-content|model-response|response-container/i)) {
                             containerTargets.push(el);
                         } else if (cls.match(/user-query|user-turn|chat-turn|user-query-container/i)) {
