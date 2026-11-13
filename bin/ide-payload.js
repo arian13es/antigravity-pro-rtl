@@ -139,7 +139,12 @@
             .response-container,
             .query-content,
             rich-textarea,
-            .text-input-field {
+            .text-input-field,
+            elicitations,
+            .elicitations-container,
+            .elicitations-message,
+            .elicitation-item,
+            .elicitation-label {
                 font-family: ${faFontName}, ${enFontStr}var(--vscode-font-family, system-ui), "Segoe UI Emoji", sans-serif !important;
             }
 
@@ -151,7 +156,9 @@
             message-content p,
             message-content li,
             .message-content p,
-            .message-content li {
+            .message-content li,
+            .elicitations-message,
+            .elicitation-label {
                 font-size: ${fs}px !important;
                 line-height: ${lh} !important;
             }
@@ -211,8 +218,14 @@
             }
 
             /* ==========================================================================
-               SUGGESTION CHIPS & FOLLOW-UP PROMPTS CONSTRAINTS (PRESERVE CENTER COLUMN)
+               SUGGESTION CHIPS, ELICITATIONS & FOLLOW-UP PROMPTS CONSTRAINTS
                ========================================================================== */
+            elicitations,
+            .elicitations-container,
+            .elicitations-message,
+            model-response .attachment-container,
+            message-content .attachment-container,
+            .attachment-container.md-has-block-component,
             .response-container [class*="chip-container"],
             .response-container [class*="suggestion"],
             .response-container [class*="followup"],
@@ -233,6 +246,17 @@
                 margin-left: auto !important;
                 margin-right: auto !important;
                 box-sizing: border-box !important;
+                align-self: center !important;
+            }
+
+            /* Ensure attachment containers inside model responses never push off-screen */
+            model-response .attachment-container,
+            message-content .attachment-container,
+            .attachment-container.md-has-block-component {
+                margin-inline-start: auto !important;
+                margin-inline-end: auto !important;
+                align-self: center !important;
+                overflow: visible !important;
             }
 
             /* Suggestion title / question text */
@@ -240,9 +264,76 @@
             [class*="followup"] p,
             [class*="follow-up"] p,
             [class*="suggestion-container"] p,
-            [class*="followup-container"] p {
+            [class*="followup-container"] p,
+            .elicitations-message {
                 max-width: 100% !important;
                 box-sizing: border-box !important;
+                direction: rtl !important;
+                text-align: right !important;
+                white-space: normal !important;
+                margin-bottom: 8px !important;
+            }
+
+            /* Elicitations container flex layout (Google Gemini Desktop) */
+            .elicitations-container {
+                display: flex !important;
+                flex-flow: row wrap !important;
+                justify-content: flex-start !important;
+                align-items: stretch !important;
+                gap: 12px !important;
+                direction: rtl !important;
+                box-sizing: border-box !important;
+                width: 100% !important;
+                max-width: 768px !important;
+                margin-left: auto !important;
+                margin-right: auto !important;
+                overflow: visible !important;
+            }
+
+            /* Individual suggestion / elicitation card buttons (cards with text and ↪) */
+            .elicitation-item {
+                display: flex !important;
+                flex-direction: column !important;
+                justify-content: space-between !important;
+                align-items: flex-start !important;
+                flex: 1 1 calc(33.333% - 12px) !important;
+                min-width: 180px !important;
+                max-width: 100% !important;
+                box-sizing: border-box !important;
+                direction: rtl !important;
+                text-align: right !important;
+                white-space: normal !important;
+                word-break: break-word !important;
+                overflow-wrap: break-word !important;
+                overflow: hidden !important;
+            }
+
+            /* Elicitation text label & prompt suggestion icon */
+            .elicitation-label {
+                direction: rtl !important;
+                text-align: right !important;
+                width: 100% !important;
+                white-space: normal !important;
+                word-break: break-word !important;
+            }
+
+            .elicitation-button-icon {
+                display: flex !important;
+                align-items: center !important;
+                justify-content: flex-start !important;
+                flex-shrink: 0 !important;
+            }
+
+            /* Mobile & narrow viewports: stack cards cleanly without horizontal clipping */
+            @media (max-width: 768px) {
+                .elicitations-container {
+                    flex-direction: column !important;
+                }
+                .elicitation-item {
+                    width: 100% !important;
+                    flex: 1 1 100% !important;
+                    min-width: 0 !important;
+                }
             }
 
             /* Chip buttons flex alignment */
@@ -287,15 +378,28 @@
                must maintain strict right-edge alignment (X = 679) flush with each other */
             user-query > *,
             .user-query > *,
+            user-query .query-content,
+            .user-query .query-content,
+            user-query [class*="query-content"],
+            .user-query [class*="query-content"],
             .query-content,
             [class*="query-content"],
             .user-query-bubble-with-background,
-            [class*="file-preview"],
-            [class*="attachment"],
-            [class*="media-preview"],
-            [class*="image-preview"],
-            [class*="query-actions"],
-            .monaco-chat-request .value {
+            user-query [class*="file-preview"],
+            .user-query [class*="file-preview"],
+            user-query [class*="attachment"],
+            .user-query [class*="attachment"],
+            user-query [class*="media-preview"],
+            .user-query [class*="media-preview"],
+            user-query [class*="image-preview"],
+            .user-query [class*="image-preview"],
+            user-query [class*="query-actions"],
+            .user-query [class*="query-actions"],
+            .monaco-chat-request .value,
+            .monaco-chat-request [class*="file-preview"],
+            .monaco-chat-request [class*="attachment"],
+            .monaco-chat-request [class*="media-preview"],
+            .monaco-chat-request [class*="image-preview"] {
                 align-self: flex-end !important;
                 margin-left: auto !important;
                 margin-right: 0 !important;
@@ -814,6 +918,17 @@
                     el.style.setProperty('display', 'flex', 'important');
                     el.style.setProperty('flex-direction', 'column', 'important');
                     el.style.setProperty('align-items', 'flex-end', 'important');
+                } else if (tag === 'ELICITATIONS' || (el.classList && el.classList.contains('elicitations-container'))) {
+                    el.style.setProperty('max-width', '768px', 'important');
+                    el.style.setProperty('width', '100%', 'important');
+                    el.style.setProperty('margin-left', 'auto', 'important');
+                    el.style.setProperty('margin-right', 'auto', 'important');
+                    el.style.setProperty('box-sizing', 'border-box', 'important');
+                    el.style.setProperty('direction', 'rtl', 'important');
+                } else if (tag === 'BUTTON' && el.classList && el.classList.contains('elicitation-item')) {
+                    el.style.setProperty('direction', 'rtl', 'important');
+                    el.style.setProperty('text-align', 'right', 'important');
+                    el.style.setProperty('box-sizing', 'border-box', 'important');
                 } else if (tag === 'DIV') {
                     const cls = el.className || '';
                     if (typeof cls === 'string') {
@@ -823,21 +938,43 @@
                             el.style.setProperty('margin-right', '0', 'important');
                             blockTargets.push(el);
                         } else if (cls.match(/file-preview|attachment|media-preview|image-preview/i)) {
-                            el.style.setProperty('align-self', 'flex-end', 'important');
-                            el.style.setProperty('margin-left', 'auto', 'important');
-                            el.style.setProperty('margin-right', '0', 'important');
+                            // CRITICAL FIX: Only apply user right-alignment if strictly inside user-query
+                            if (el.closest('user-query, .user-query, [class*="user-query"], [class*="user-turn"], .monaco-chat-request')) {
+                                el.style.setProperty('align-self', 'flex-end', 'important');
+                                el.style.setProperty('margin-left', 'auto', 'important');
+                                el.style.setProperty('margin-right', '0', 'important');
+                            } else if (el.closest('model-response, message-content, [class*="model-response"], [class*="message-content"]')) {
+                                // Model-side attachments (like Gemini's <div class="attachment-container">) must be centered and constrained
+                                el.style.setProperty('align-self', 'center', 'important');
+                                el.style.setProperty('margin-left', 'auto', 'important');
+                                el.style.setProperty('margin-right', 'auto', 'important');
+                                el.style.setProperty('max-width', '768px', 'important');
+                                el.style.setProperty('width', '100%', 'important');
+                                el.style.setProperty('box-sizing', 'border-box', 'important');
+                            }
                         } else if (cls.match(/query-actions/i)) {
-                            el.style.setProperty('align-self', 'flex-end', 'important');
-                            el.style.setProperty('margin-left', 'auto', 'important');
-                            el.style.setProperty('margin-right', '0', 'important');
-                            el.style.setProperty('display', 'flex', 'important');
-                            el.style.setProperty('justify-content', 'flex-end', 'important');
-                        } else if (cls.match(/suggestion|followup|follow-up/i)) {
+                            if (el.closest('user-query, .user-query, [class*="user-query"], [class*="user-turn"], .monaco-chat-request')) {
+                                el.style.setProperty('align-self', 'flex-end', 'important');
+                                el.style.setProperty('margin-left', 'auto', 'important');
+                                el.style.setProperty('margin-right', '0', 'important');
+                                el.style.setProperty('display', 'flex', 'important');
+                                el.style.setProperty('justify-content', 'flex-end', 'important');
+                            }
+                        } else if (cls.match(/suggestion|followup|follow-up|elicitations/i)) {
                             el.style.setProperty('max-width', '768px', 'important');
                             el.style.setProperty('width', '100%', 'important');
                             el.style.setProperty('margin-left', 'auto', 'important');
                             el.style.setProperty('margin-right', 'auto', 'important');
                             el.style.setProperty('box-sizing', 'border-box', 'important');
+                            if (cls.match(/elicitations-message/i)) {
+                                el.style.setProperty('direction', 'rtl', 'important');
+                                el.style.setProperty('text-align', 'right', 'important');
+                                blockTargets.push(el);
+                            }
+                        } else if (cls.match(/elicitation-label/i)) {
+                            el.style.setProperty('direction', 'rtl', 'important');
+                            el.style.setProperty('text-align', 'right', 'important');
+                            blockTargets.push(el);
                         } else if (cls.match(/message-content|model-response|response-container/i)) {
                             containerTargets.push(el);
                         } else if (cls.match(/user-query|user-turn|chat-turn|user-query-container/i)) {
