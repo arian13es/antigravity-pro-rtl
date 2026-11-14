@@ -125,14 +125,14 @@ test('ide-payload.js preserves code blocks, KaTeX math, user attachments, and se
     assert.match(content, /direction:\s*ltr\s*!important/);
     assert.match(content, /text-align:\s*left\s*!important/);
     assert.match(content, /unicode-bidi:\s*isolate\s*!important/);
-    assert.match(content, /\['PRE',\s*'CODE',\s*'SVG',\s*'MATH',\s*'SCRIPT',\s*'STYLE'\]\.includes\(tag\)/);
+    assert.match(content, /\['PRE',\s*'CODE',\s*'SVG',\s*'MATH',\s*'SCRIPT'/);
 
     // 2. KaTeX & Mathematical Formula Preservation
     assert.match(content, /\.katex,\s*\.katex\s*\*/);
     assert.match(content, /mjx-container,\s*mjx-container\s*\*/);
     assert.match(content, /\.katex-display,\s*\.katex-display\s*\*/);
     assert.match(content, /text-align:\s*center\s*!important/);
-    assert.match(content, /el\.classList\.contains\('katex'\)/);
+    assert.match(content, /clsStr\.includes\('katex'\)/);
 
     // 3. User Attachment vs Model Attachment Scoping
     assert.match(content, /cls\.match\(\/file-preview\|attachment\|media-preview\|image-preview\/i\)/);
@@ -218,12 +218,17 @@ test('ide-payload.js strictly protects application chrome, input bar, and icons 
     assert.match(content, /input-area/);
     assert.match(content, /\[class\*="bottom-container"\]/);
     assert.match(content, /\[class\*="top-bar"\]/);
+    assert.match(content, /\[role="banner"\]/);
+    assert.match(content, /mat-toolbar/);
     assert.match(content, /rich-textarea\s*\{[^}]*direction:\s*ltr\s*!important/s);
 
-    // 2. Icon elements protected
+    // 2. Icon elements strictly protected with native font ligatures stack
     assert.match(content, /mat-icon/);
     assert.match(content, /google-symbols/);
-    assert.match(content, /\['MAT-ICON',\s*'I'\]\.includes\(tag\)/);
+    assert.match(content, /'Google Symbols'/);
+    assert.match(content, /'Material Symbols Outlined'/);
+    assert.match(content, /clsStr\.includes\('google-symbols'\)/);
+    assert.match(content, /clsStr\.includes\('material-symbols'\)/);
 
     // 3. Input bar typing dynamically isolated to RTL
     assert.match(content, /rich-textarea\s+\[contenteditable="true"\]\[dir="rtl"\]/);

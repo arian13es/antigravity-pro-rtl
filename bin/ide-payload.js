@@ -125,36 +125,44 @@
                 font-display: swap;
             }
             
-            /* Universal font application: Antigravity IDE, Standard App, and Gemini Desktop */
+            /* Universal font application: Antigravity IDE, Standard App, and Gemini Desktop (Strictly text elements) */
             .smart-rtl-text-node, 
-            .monaco-chat-request, 
+            .monaco-chat-request .value, 
             .monaco-chat-response,
             .interactive-input-part,
             .chat-input-part,
-            message-content,
-            .message-content,
-            model-response,
-            user-query,
-            .conversation-container,
-            .response-container,
+            message-content p,
+            message-content li,
+            message-content span,
+            .message-content p,
+            .message-content li,
+            .message-content span,
+            model-response p,
+            model-response li,
+            model-response span:not([class*="symbol"]):not([class*="icon"]),
             .query-content,
-            rich-textarea,
-            .text-input-field,
-            elicitations,
-            .elicitations-container,
+            rich-textarea [contenteditable="true"],
+            .text-input-field textarea,
             .elicitations-message,
-            .elicitation-item,
             .elicitation-label,
-            suggestion-chips,
-            suggestion-chip,
-            action-chips,
-            mat-chip-set,
-            mat-chip,
-            [class*="suggestion"],
-            [class*="chip"],
+            model-response suggestion-chip [class*="text"],
+            model-response mat-chip [class*="text"],
+            chat-turn suggestion-chip [class*="text"],
+            chat-turn mat-chip [class*="text"],
             [class*="conversation-title"],
             [class*="history-item"],
             [class*="notebook-title"],
+            p[dir="rtl"],
+            li[dir="rtl"],
+            h1[dir="rtl"],
+            h2[dir="rtl"],
+            h3[dir="rtl"],
+            h4[dir="rtl"],
+            h5[dir="rtl"],
+            h6[dir="rtl"],
+            blockquote[dir="rtl"],
+            td[dir="rtl"],
+            th[dir="rtl"],
             side-navigation-v2 [dir="rtl"],
             side-nav [dir="rtl"],
             nav [dir="rtl"],
@@ -241,7 +249,7 @@
             }
 
             /* ==========================================================================
-               SUGGESTION CHIPS, ELICITATIONS & FOLLOW-UP PROMPTS CONSTRAINTS
+               SUGGESTION CHIPS, ELICITATIONS & FOLLOW-UP PROMPTS CONSTRAINTS (SCOPED)
                ========================================================================== */
             elicitations,
             .elicitations-container,
@@ -256,11 +264,11 @@
             chat-turn action-chips,
             chat-turn mat-chip-set,
             chat-turn mat-chip,
-            suggestion-chips,
-            suggestion-chip,
-            action-chips,
-            mat-chip-set,
-            mat-chip,
+            elicitations suggestion-chips,
+            elicitations suggestion-chip,
+            elicitations action-chips,
+            elicitations mat-chip-set,
+            elicitations mat-chip,
             model-response .attachment-container,
             message-content .attachment-container,
             .attachment-container.md-has-block-component,
@@ -278,8 +286,6 @@
             chat-turn [class*="followup"],
             chat-turn [class*="follow-up"],
             chat-turn [class*="chip"],
-            chat-turn suggestion-chips,
-            chat-turn action-chips,
             [class*="suggestion-container"],
             [class*="suggestions-container"],
             [class*="followup-container"],
@@ -333,16 +339,16 @@
                 overflow: visible !important;
             }
 
-            /* Suggestion Chips and Actions container flex layout (Strictly scoped) */
+            /* Suggestion Chips and Actions container flex layout (Strictly scoped to responses) */
             model-response suggestion-chips,
             model-response action-chips,
             model-response mat-chip-set,
             chat-turn suggestion-chips,
             chat-turn action-chips,
             chat-turn mat-chip-set,
-            suggestion-chips,
-            action-chips,
-            mat-chip-set,
+            elicitations suggestion-chips,
+            elicitations action-chips,
+            elicitations mat-chip-set,
             model-response [class*="chip-container"],
             model-response [class*="chips-container"],
             model-response [class*="suggestion-list"],
@@ -392,8 +398,8 @@
             model-response [class*="suggestion-chip"],
             chat-turn button[class*="suggestion"],
             model-response button[class*="suggestion"],
-            suggestion-chip,
-            mat-chip {
+            elicitations suggestion-chip,
+            elicitations mat-chip {
                 display: inline-flex !important;
                 flex-direction: row !important;
                 align-items: center !important;
@@ -588,9 +594,15 @@
             nav,
             aside,
             header,
+            [role="banner"],
+            [role="navigation"],
+            [role="toolbar"],
+            mat-toolbar,
             .top-bar,
             [class*="top-bar"],
             [class*="header"],
+            [class*="app-bar"],
+            [class*="toolbar"],
             .conversation-container,
             input-area,
             .input-area,
@@ -603,14 +615,27 @@
                 direction: ltr !important;
             }
 
-            /* Protect icons from font overriding and direction mutation */
+            /* Protect icons from font overriding, ligatures breakdown, and direction mutation */
             mat-icon,
             [class*="mat-icon"],
             [class*="material-symbols"],
             [class*="google-symbols"],
-            [class*="material-icons"] {
-                font-family: inherit !important;
+            [class*="google-symbol"],
+            [class*="material-icons"],
+            .google-symbols,
+            .material-symbols-outlined,
+            .material-symbols-rounded,
+            .material-symbols-sharp {
+                font-family: 'Google Symbols', 'Material Symbols Outlined', 'Material Symbols Rounded', 'Material Symbols Sharp', 'Material Icons' !important;
                 direction: ltr !important;
+                font-style: normal !important;
+                font-weight: normal !important;
+                letter-spacing: normal !important;
+                line-height: 1 !important;
+                text-transform: none !important;
+                white-space: nowrap !important;
+                word-wrap: normal !important;
+                unicode-bidi: isolate !important;
             }
 
             /* Inside input bar, only user Persian text is RTL */
@@ -1071,22 +1096,24 @@
                 if (el.classList && el.classList.contains('rtl-widget-container')) return;
 
                 const tag = el.tagName;
-                if (['PRE', 'CODE', 'SVG', 'MATH', 'SCRIPT', 'STYLE'].includes(tag)) return;
-                if (['MAT-ICON', 'I'].includes(tag)) return;
-                if (el.classList && (
-                    el.classList.contains('katex') || 
-                    el.classList.contains('monaco-editor') ||
-                    el.classList.contains('mat-icon') ||
-                    el.classList.contains('material-symbols-outlined') ||
-                    el.classList.contains('google-symbols') ||
-                    el.classList.contains('google-symbol') ||
-                    el.classList.contains('material-icons')
-                )) return;
+                const clsStr = typeof el.className === 'string' ? el.className : '';
+                if (['PRE', 'CODE', 'SVG', 'MATH', 'SCRIPT', 'STYLE', 'MAT-ICON', 'I'].includes(tag)) return;
+                if (
+                    clsStr.includes('google-symbols') ||
+                    clsStr.includes('google-symbol') ||
+                    clsStr.includes('material-symbols') ||
+                    clsStr.includes('material-icons') ||
+                    clsStr.includes('mat-icon') ||
+                    clsStr.includes('katex') ||
+                    clsStr.includes('monaco-editor')
+                ) return;
+
+                const chromeSelector = 'header, [role="banner"], [role="navigation"], [role="toolbar"], mat-toolbar, .top-bar, [class*="top-bar"], [class*="header"], [class*="app-bar"], [class*="toolbar"], [class*="input-area"], [class*="bottom-container"], input-area, rich-textarea, [class*="pill-container"]';
 
                 if (['P', 'LI', 'H1', 'H2', 'H3', 'H4', 'H5', 'H6', 'BLOCKQUOTE', 'TD', 'TH'].includes(tag)) {
                     blockTargets.push(el);
                 } else if (['SPAN', 'A', 'LABEL'].includes(tag) && el.children.length === 0 && el.textContent.trim().length > 0) {
-                    if (!el.closest('.top-bar, [class*="top-bar"], header, [class*="header"], [class*="input-area"], [class*="bottom-container"], input-area, rich-textarea')) {
+                    if (!el.closest(chromeSelector)) {
                         blockTargets.push(el);
                     }
                 } else if (el.getAttribute('contenteditable') === 'true' || tag === 'TEXTAREA') {
@@ -1168,7 +1195,7 @@
                         } else if (cls.match(/monaco-chat-request/i)) {
                             el.style.setProperty('direction', 'ltr', 'important');
                         } else if (el.children.length === 0 && el.textContent.trim().length > 0) {
-                            if (!el.closest('.top-bar, [class*="top-bar"], header, [class*="header"], [class*="input-area"], [class*="bottom-container"], input-area, rich-textarea')) {
+                            if (!el.closest(chromeSelector)) {
                                 blockTargets.push(el);
                             }
                         }
