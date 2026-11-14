@@ -376,13 +376,35 @@ async function patchGemini(asarPath, isRestore) {
         }
 
         // Anchor in Gemini main.js where the primary WebContentsView is registered
-        const anchor = 'o.contentView.addChildView(d),k=d;';
-        if (!mainCode.includes(anchor)) {
+        // Gemini 1.18.x used variable 'd' and anchor 'o.contentView.addChildView(d),k=d;'
+        // Gemini 1.19.x uses variable 'n' and anchor 't?e.contentView.addChildView(n,0):e.contentView.addChildView(n),x=n;'
+        let anchor = null;
+        let viewVar = null;
+
+        if (mainCode.includes('t?e.contentView.addChildView(n,0):e.contentView.addChildView(n),x=n;')) {
+            anchor = 't?e.contentView.addChildView(n,0):e.contentView.addChildView(n),x=n;';
+            viewVar = 'n';
+        } else if (mainCode.includes('o.contentView.addChildView(d),k=d;')) {
+            anchor = 'o.contentView.addChildView(d),k=d;';
+            viewVar = 'd';
+        } else {
+            // Robust heuristic fallback matching WebContentsView with preload.js followed by addChildView
+            const m = mainCode.match(/let\s+([A-Za-z0-9_$]+)=new\s+[A-Za-z0-9_$]+\.WebContentsView\(\{.*?preload:[A-Za-z0-9_$]+\.join\(__dirname,"preload\.js"\).*?\}\);.*?addChildView\(\1/s);
+            if (m) {
+                viewVar = m[1];
+                const addMatch = mainCode.substring(m.index).match(new RegExp(`[^;]*addChildView\\(${viewVar}[^;]*;`));
+                if (addMatch) {
+                    anchor = addMatch[0];
+                }
+            }
+        }
+
+        if (!anchor || !viewVar) {
             throw new Error('Target injection anchor in Gemini main.js not found.');
         }
 
         const injectionPayload = `/* ANTIGRAVITY PRO RTL PATCH */
-o.contentView.addChildView(d),k=d;
+${anchor}
 try {
     const _rtlFs = require('fs');
     const _rtlPath = require('path');
@@ -393,8 +415,8 @@ try {
     }
     const _injectedCode = ${ideCodeString}.replace(/__FONT_BASE64__/g, _fontB64);
 
-    if (d && d.webContents && d.webContents.session) {
-        d.webContents.session.webRequest.onHeadersReceived((details, callback) => {
+    if (${viewVar} && ${viewVar}.webContents && ${viewVar}.webContents.session) {
+        ${viewVar}.webContents.session.webRequest.onHeadersReceived((details, callback) => {
             const rh = Object.assign({}, details.responseHeaders);
             for (const k of Object.keys(rh)) {
                 if (k.toLowerCase() === 'content-security-policy') {
@@ -410,16 +432,16 @@ try {
 
     const _execRTL = () => {
         try {
-            if (d && d.webContents && !d.webContents.isDestroyed()) {
-                d.webContents.executeJavaScript(_injectedCode).catch(err => {
+            if (${viewVar} && ${viewVar}.webContents && !${viewVar}.webContents.isDestroyed()) {
+                ${viewVar}.webContents.executeJavaScript(_injectedCode).catch(err => {
                     console.error('[Smart-RTL] executeJavaScript failed:', err);
                 });
             }
         } catch(e) {}
     };
 
-    d.webContents.on('dom-ready', _execRTL);
-    d.webContents.on('did-finish-load', _execRTL);
+    ${viewVar}.webContents.on('dom-ready', _execRTL);
+    ${viewVar}.webContents.on('did-finish-load', _execRTL);
 } catch(_rtlErr) {
     console.error('[Smart-RTL] Injection failed:', _rtlErr);
 }`;

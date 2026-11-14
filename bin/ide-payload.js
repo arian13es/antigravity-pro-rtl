@@ -144,7 +144,21 @@
             .elicitations-container,
             .elicitations-message,
             .elicitation-item,
-            .elicitation-label {
+            .elicitation-label,
+            suggestion-chips,
+            suggestion-chip,
+            action-chips,
+            mat-chip-set,
+            mat-chip,
+            [class*="suggestion"],
+            [class*="chip"],
+            [class*="conversation-title"],
+            [class*="history-item"],
+            [class*="notebook-title"],
+            side-navigation-v2 [dir="rtl"],
+            side-nav [dir="rtl"],
+            nav [dir="rtl"],
+            aside [dir="rtl"] {
                 font-family: ${faFontName}, ${enFontStr}var(--vscode-font-family, system-ui), "Segoe UI Emoji", sans-serif !important;
             }
 
@@ -200,16 +214,25 @@
             }
 
             /* Mathematical formulas, code blocks and monospace preservation */
-            pre, code, kbd, samp,
+            pre, code, kbd, samp, var,
             pre *, code *,
             .monaco-editor .view-lines,
             .katex, .katex *,
             mjx-container, mjx-container *,
-            math, math * {
+            math, math *,
+            span[class*="math"],
+            span[class*="formula"],
+            math-inline,
+            math-display {
                 direction: ltr !important;
                 text-align: left !important;
                 unicode-bidi: isolate !important;
                 font-family: var(--vscode-editor-font-family, Consolas, "Courier New", monospace) !important;
+            }
+
+            code, kbd, samp, var, math-inline, span[class*="math-inline"] {
+                display: inline-block;
+                unicode-bidi: isolate !important;
             }
 
             .katex-display, .katex-display * {
@@ -223,20 +246,30 @@
             elicitations,
             .elicitations-container,
             .elicitations-message,
+            suggestion-chips,
+            suggestion-chip,
+            action-chips,
+            mat-chip-set,
+            mat-chip,
             model-response .attachment-container,
             message-content .attachment-container,
             .attachment-container.md-has-block-component,
             .response-container [class*="chip-container"],
+            .response-container [class*="chips"],
             .response-container [class*="suggestion"],
             .response-container [class*="followup"],
             .response-container [class*="follow-up"],
             model-response [class*="chip-container"],
+            model-response [class*="chips"],
             model-response [class*="suggestion"],
             model-response [class*="followup"],
             model-response [class*="follow-up"],
             chat-turn [class*="suggestion"],
             chat-turn [class*="followup"],
             chat-turn [class*="follow-up"],
+            chat-turn [class*="chip"],
+            chat-turn suggestion-chips,
+            chat-turn action-chips,
             [class*="suggestion-container"],
             [class*="suggestions-container"],
             [class*="followup-container"],
@@ -290,6 +323,28 @@
                 overflow: visible !important;
             }
 
+            /* Suggestion Chips and Actions container flex layout */
+            suggestion-chips,
+            action-chips,
+            mat-chip-set,
+            [class*="chip-container"],
+            [class*="chips-container"],
+            [class*="suggestion-list"],
+            [class*="suggestions-list"] {
+                display: flex !important;
+                flex-flow: row wrap !important;
+                justify-content: flex-start !important;
+                align-items: stretch !important;
+                gap: 8px !important;
+                direction: rtl !important;
+                box-sizing: border-box !important;
+                width: 100% !important;
+                max-width: 768px !important;
+                margin-left: auto !important;
+                margin-right: auto !important;
+                overflow: visible !important;
+            }
+
             /* Individual suggestion / elicitation card buttons (cards with text and ↪) */
             .elicitation-item {
                 display: flex !important;
@@ -308,11 +363,29 @@
                 overflow: hidden !important;
             }
 
-            /* Elicitation text label & prompt suggestion icon */
-            .elicitation-label {
+            /* Single inline suggestion chips (like 'Yes ↪' in Screenshot 4) */
+            suggestion-chip,
+            mat-chip,
+            [class*="suggestion-chip"],
+            button[class*="suggestion"],
+            button[class*="chip"] {
+                display: inline-flex !important;
+                flex-direction: row !important;
+                align-items: center !important;
+                gap: 6px !important;
                 direction: rtl !important;
                 text-align: right !important;
-                width: 100% !important;
+                box-sizing: border-box !important;
+                white-space: nowrap !important;
+                flex: 0 0 auto !important;
+            }
+
+            /* Elicitation text label & prompt suggestion icon */
+            .elicitation-label,
+            suggestion-chip [class*="text"],
+            mat-chip [class*="text"] {
+                direction: rtl !important;
+                text-align: right !important;
                 white-space: normal !important;
                 word-break: break-word !important;
             }
@@ -326,7 +399,9 @@
 
             /* Mobile & narrow viewports: stack cards cleanly without horizontal clipping */
             @media (max-width: 768px) {
-                .elicitations-container {
+                .elicitations-container,
+                suggestion-chips,
+                action-chips {
                     flex-direction: column !important;
                 }
                 .elicitation-item {
@@ -348,6 +423,7 @@
                 gap: 8px !important;
                 max-width: 100% !important;
                 box-sizing: border-box !important;
+                direction: rtl !important;
             }
 
             [dir="rtl"] [class*="chip-container"],
@@ -378,6 +454,7 @@
                must maintain strict right-edge alignment (X = 679) flush with each other */
             user-query > *,
             .user-query > *,
+            [class*="user-query"] > *,
             user-query .query-content,
             .user-query .query-content,
             user-query [class*="query-content"],
@@ -385,6 +462,10 @@
             .query-content,
             [class*="query-content"],
             .user-query-bubble-with-background,
+            user-query [class*="query-container"],
+            .user-query [class*="query-container"],
+            user-query [class*="bubble"],
+            .user-query [class*="bubble"],
             user-query [class*="file-preview"],
             .user-query [class*="file-preview"],
             user-query [class*="attachment"],
@@ -393,6 +474,8 @@
             .user-query [class*="media-preview"],
             user-query [class*="image-preview"],
             .user-query [class*="image-preview"],
+            user-query [class*="thumbnail"],
+            .user-query [class*="thumbnail"],
             user-query [class*="query-actions"],
             .user-query [class*="query-actions"],
             .monaco-chat-request .value,
@@ -406,6 +489,7 @@
                 margin-inline-start: auto !important;
                 margin-inline-end: 0 !important;
                 max-width: 100% !important;
+                box-sizing: border-box !important;
             }
 
             /* Action toolbar buttons (edit, copy) inside user queries */
@@ -448,6 +532,24 @@
                 align-self: flex-end !important;
                 margin-left: auto !important;
                 margin-right: 0 !important;
+            }
+
+            /* Sidebar conversation titles, notebook items, and navigation entries */
+            [class*="conversation-title"],
+            [class*="history-item"],
+            [class*="notebook-title"],
+            [class*="conversation"] [dir="rtl"],
+            [class*="history"] [dir="rtl"],
+            [class*="recent"] [dir="rtl"],
+            [class*="nav-item"] [dir="rtl"],
+            [class*="side-nav"] [dir="rtl"],
+            side-navigation-v2 [dir="rtl"],
+            side-nav [dir="rtl"],
+            nav [dir="rtl"],
+            aside [dir="rtl"] {
+                direction: rtl !important;
+                text-align: right !important;
+                unicode-bidi: isolate !important;
             }
         `;
         if (isRTL) injectStyle('smart-ide-rtl-style', dynamicCSS);
@@ -906,6 +1008,8 @@
 
                 if (['P', 'LI', 'H1', 'H2', 'H3', 'H4', 'H5', 'H6', 'BLOCKQUOTE', 'TD', 'TH'].includes(tag)) {
                     blockTargets.push(el);
+                } else if (['SPAN', 'A', 'LABEL'].includes(tag) && el.children.length === 0 && el.textContent.trim().length > 0) {
+                    blockTargets.push(el);
                 } else if (el.getAttribute('contenteditable') === 'true' || tag === 'TEXTAREA') {
                     blockTargets.push(el);
                 } else if (tag === 'INPUT' && (!el.type || el.type === 'text' || el.type === 'search')) {
@@ -918,14 +1022,14 @@
                     el.style.setProperty('display', 'flex', 'important');
                     el.style.setProperty('flex-direction', 'column', 'important');
                     el.style.setProperty('align-items', 'flex-end', 'important');
-                } else if (tag === 'ELICITATIONS' || (el.classList && el.classList.contains('elicitations-container'))) {
+                } else if (tag === 'ELICITATIONS' || tag === 'SUGGESTION-CHIPS' || tag === 'ACTION-CHIPS' || (el.classList && el.classList.contains('elicitations-container'))) {
                     el.style.setProperty('max-width', '768px', 'important');
                     el.style.setProperty('width', '100%', 'important');
                     el.style.setProperty('margin-left', 'auto', 'important');
                     el.style.setProperty('margin-right', 'auto', 'important');
                     el.style.setProperty('box-sizing', 'border-box', 'important');
                     el.style.setProperty('direction', 'rtl', 'important');
-                } else if (tag === 'BUTTON' && el.classList && el.classList.contains('elicitation-item')) {
+                } else if ((tag === 'BUTTON' && el.classList && el.classList.contains('elicitation-item')) || tag === 'SUGGESTION-CHIP' || tag === 'MAT-CHIP' || (el.classList && el.classList.contains('suggestion-chip'))) {
                     el.style.setProperty('direction', 'rtl', 'important');
                     el.style.setProperty('text-align', 'right', 'important');
                     el.style.setProperty('box-sizing', 'border-box', 'important');
@@ -975,6 +1079,17 @@
                             el.style.setProperty('direction', 'rtl', 'important');
                             el.style.setProperty('text-align', 'right', 'important');
                             blockTargets.push(el);
+                        } else if (cls.match(/conversation|history|side-nav|recent|notebook/i)) {
+                            // Check if this sidebar item has Persian text
+                            const txt = el.textContent;
+                            if (txt && txt.trim() && detectDirection(txt) === 'rtl') {
+                                el.setAttribute('dir', 'rtl');
+                                el.style.setProperty('direction', 'rtl', 'important');
+                                el.style.setProperty('text-align', 'right', 'important');
+                                if (el.children.length === 0) {
+                                    blockTargets.push(el);
+                                }
+                            }
                         } else if (cls.match(/message-content|model-response|response-container/i)) {
                             containerTargets.push(el);
                         } else if (cls.match(/user-query|user-turn|chat-turn|user-query-container/i)) {

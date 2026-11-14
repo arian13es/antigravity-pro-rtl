@@ -152,3 +152,59 @@ test('ide-payload.js preserves code blocks, KaTeX math, user attachments, and se
     assert.match(content, /e\.altKey\s*&&\s*e\.code === 'KeyR'/);
     assert.match(content, /fixAtSign/);
 });
+
+test('bin/index.js supports both Gemini 1.18.x and 1.19.x injection anchors dynamically', () => {
+    const indexPath = path.join(__dirname, '..', 'bin', 'index.js');
+    const indexContent = fs.readFileSync(indexPath, 'utf8');
+
+    // 1. Checks 1.19.x anchor
+    assert.match(indexContent, /t\?e\.contentView\.addChildView\(n,0\):e\.contentView\.addChildView\(n\),x=n;/);
+
+    // 2. Checks 1.18.x anchor
+    assert.match(indexContent, /o\.contentView\.addChildView\(d\),k=d;/);
+
+    // 3. Dynamic regex fallback
+    assert.match(indexContent, /WebContentsView/);
+    assert.match(indexContent, /addChildView/);
+
+    // 4. Dynamic viewVar interpolation in injection payload
+    assert.match(indexContent, /\$\{viewVar\}\s*&&\s*\$\{viewVar\}\.webContents/);
+});
+
+test('ide-payload.js enforces sidebar navigation and conversation list RTL styling', () => {
+    const payloadPath = path.join(__dirname, '..', 'bin', 'ide-payload.js');
+    const content = fs.readFileSync(payloadPath, 'utf8');
+
+    // 1. Sidebar font inclusion
+    assert.match(content, /side-navigation-v2\s*\[dir="rtl"\]/);
+    assert.match(content, /\[class\*="conversation-title"\]/);
+    assert.match(content, /\[class\*="history-item"\]/);
+    assert.match(content, /\[class\*="notebook-title"\]/);
+
+    // 2. Sidebar RTL direction and text alignment
+    assert.match(content, /\[class\*="conversation"\]\s*\[dir="rtl"\]/);
+    assert.match(content, /side-nav\s*\[dir="rtl"\]/);
+
+    // 3. Leaf SPAN/A inspection in walkDOM
+    assert.match(content, /\['SPAN',\s*'A',\s*'LABEL'\]\.includes\(tag\)/);
+    assert.match(content, /el\.children\.length === 0/);
+});
+
+test('ide-payload.js supports single suggestion chips and chip containers', () => {
+    const payloadPath = path.join(__dirname, '..', 'bin', 'ide-payload.js');
+    const content = fs.readFileSync(payloadPath, 'utf8');
+
+    // 1. Chip tags in layout constraints
+    assert.match(content, /suggestion-chips/);
+    assert.match(content, /suggestion-chip/);
+    assert.match(content, /action-chips/);
+    assert.match(content, /mat-chip-set/);
+    assert.match(content, /mat-chip/);
+
+    // 2. Single chip inline-flex display
+    assert.match(content, /display:\s*inline-flex\s*!important/);
+    assert.match(content, /white-space:\s*nowrap\s*!important/);
+
+    // 3. Chip containers centered to 768px with RTL direction
+    assert.match(content, /suggestion-chips[^}]*direction:\s*rtl\s*!important/s);
+});
