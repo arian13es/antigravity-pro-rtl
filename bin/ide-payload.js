@@ -246,6 +246,16 @@
             elicitations,
             .elicitations-container,
             .elicitations-message,
+            model-response suggestion-chips,
+            model-response suggestion-chip,
+            model-response action-chips,
+            model-response mat-chip-set,
+            model-response mat-chip,
+            chat-turn suggestion-chips,
+            chat-turn suggestion-chip,
+            chat-turn action-chips,
+            chat-turn mat-chip-set,
+            chat-turn mat-chip,
             suggestion-chips,
             suggestion-chip,
             action-chips,
@@ -323,14 +333,24 @@
                 overflow: visible !important;
             }
 
-            /* Suggestion Chips and Actions container flex layout */
+            /* Suggestion Chips and Actions container flex layout (Strictly scoped) */
+            model-response suggestion-chips,
+            model-response action-chips,
+            model-response mat-chip-set,
+            chat-turn suggestion-chips,
+            chat-turn action-chips,
+            chat-turn mat-chip-set,
             suggestion-chips,
             action-chips,
             mat-chip-set,
-            [class*="chip-container"],
-            [class*="chips-container"],
-            [class*="suggestion-list"],
-            [class*="suggestions-list"] {
+            model-response [class*="chip-container"],
+            model-response [class*="chips-container"],
+            model-response [class*="suggestion-list"],
+            model-response [class*="suggestions-list"],
+            chat-turn [class*="chip-container"],
+            chat-turn [class*="chips-container"],
+            chat-turn [class*="suggestion-list"],
+            chat-turn [class*="suggestions-list"] {
                 display: flex !important;
                 flex-flow: row wrap !important;
                 justify-content: flex-start !important;
@@ -363,12 +383,17 @@
                 overflow: hidden !important;
             }
 
-            /* Single inline suggestion chips (like 'Yes ↪' in Screenshot 4) */
+            /* Single inline suggestion chips (like 'Yes ↪' in Screenshot 4) - Scoped to responses */
+            model-response suggestion-chip,
+            model-response mat-chip,
+            chat-turn suggestion-chip,
+            chat-turn mat-chip,
+            chat-turn [class*="suggestion-chip"],
+            model-response [class*="suggestion-chip"],
+            chat-turn button[class*="suggestion"],
+            model-response button[class*="suggestion"],
             suggestion-chip,
-            mat-chip,
-            [class*="suggestion-chip"],
-            button[class*="suggestion"],
-            button[class*="chip"] {
+            mat-chip {
                 display: inline-flex !important;
                 flex-direction: row !important;
                 align-items: center !important;
@@ -382,8 +407,9 @@
 
             /* Elicitation text label & prompt suggestion icon */
             .elicitation-label,
-            suggestion-chip [class*="text"],
-            mat-chip [class*="text"] {
+            model-response suggestion-chip [class*="text"],
+            model-response mat-chip [class*="text"],
+            chat-turn suggestion-chip [class*="text"] {
                 direction: rtl !important;
                 text-align: right !important;
                 white-space: normal !important;
@@ -400,6 +426,8 @@
             /* Mobile & narrow viewports: stack cards cleanly without horizontal clipping */
             @media (max-width: 768px) {
                 .elicitations-container,
+                model-response suggestion-chips,
+                chat-turn suggestion-chips,
                 suggestion-chips,
                 action-chips {
                     flex-direction: column !important;
@@ -411,11 +439,13 @@
                 }
             }
 
-            /* Chip buttons flex alignment */
-            [class*="chip-container"],
-            [class*="chips"],
-            [class*="suggestion-list"],
-            [class*="suggestions-list"] {
+            /* Chip buttons flex alignment inside responses */
+            model-response [class*="chip-container"],
+            model-response [class*="chips"],
+            model-response [class*="suggestion-list"],
+            chat-turn [class*="chip-container"],
+            chat-turn [class*="chips"],
+            chat-turn [class*="suggestion-list"] {
                 display: flex !important;
                 flex-direction: row !important;
                 flex-wrap: wrap !important;
@@ -426,10 +456,10 @@
                 direction: rtl !important;
             }
 
-            [dir="rtl"] [class*="chip-container"],
-            [dir="rtl"] [class*="chips"],
-            [dir="rtl"] [class*="suggestion-list"],
-            [dir="rtl"] [class*="suggestions-list"] {
+            [dir="rtl"] model-response [class*="chip-container"],
+            [dir="rtl"] model-response [class*="chips"],
+            [dir="rtl"] chat-turn [class*="chip-container"],
+            [dir="rtl"] chat-turn [class*="chips"] {
                 direction: rtl !important;
                 justify-content: flex-start !important;
             }
@@ -547,6 +577,46 @@
             side-nav [dir="rtl"],
             nav [dir="rtl"],
             aside [dir="rtl"] {
+                direction: rtl !important;
+                text-align: right !important;
+                unicode-bidi: isolate !important;
+            }
+
+            /* Structural Chrome & Input Isolation (Protects application layout from inversion) */
+            side-navigation-v2,
+            side-nav,
+            nav,
+            aside,
+            header,
+            .top-bar,
+            [class*="top-bar"],
+            [class*="header"],
+            .conversation-container,
+            input-area,
+            .input-area,
+            [class*="input-area"],
+            [class*="bottom-container"],
+            [class*="chat-window-input"],
+            [class*="input-box"],
+            [class*="pill-container"],
+            rich-textarea {
+                direction: ltr !important;
+            }
+
+            /* Protect icons from font overriding and direction mutation */
+            mat-icon,
+            [class*="mat-icon"],
+            [class*="material-symbols"],
+            [class*="google-symbols"],
+            [class*="material-icons"] {
+                font-family: inherit !important;
+                direction: ltr !important;
+            }
+
+            /* Inside input bar, only user Persian text is RTL */
+            rich-textarea [contenteditable="true"][dir="rtl"],
+            rich-textarea [contenteditable="true"] p[dir="rtl"],
+            .text-input-field textarea[dir="rtl"] {
                 direction: rtl !important;
                 text-align: right !important;
                 unicode-bidi: isolate !important;
@@ -1002,14 +1072,23 @@
 
                 const tag = el.tagName;
                 if (['PRE', 'CODE', 'SVG', 'MATH', 'SCRIPT', 'STYLE'].includes(tag)) return;
-                if (el.classList && (el.classList.contains('katex') || el.classList.contains('monaco-editor'))) {
-                    if (!el.closest('.interactive-input-part, .chat-input-part')) return;
-                }
+                if (['MAT-ICON', 'I'].includes(tag)) return;
+                if (el.classList && (
+                    el.classList.contains('katex') || 
+                    el.classList.contains('monaco-editor') ||
+                    el.classList.contains('mat-icon') ||
+                    el.classList.contains('material-symbols-outlined') ||
+                    el.classList.contains('google-symbols') ||
+                    el.classList.contains('google-symbol') ||
+                    el.classList.contains('material-icons')
+                )) return;
 
                 if (['P', 'LI', 'H1', 'H2', 'H3', 'H4', 'H5', 'H6', 'BLOCKQUOTE', 'TD', 'TH'].includes(tag)) {
                     blockTargets.push(el);
                 } else if (['SPAN', 'A', 'LABEL'].includes(tag) && el.children.length === 0 && el.textContent.trim().length > 0) {
-                    blockTargets.push(el);
+                    if (!el.closest('.top-bar, [class*="top-bar"], header, [class*="header"], [class*="input-area"], [class*="bottom-container"], input-area, rich-textarea')) {
+                        blockTargets.push(el);
+                    }
                 } else if (el.getAttribute('contenteditable') === 'true' || tag === 'TEXTAREA') {
                     blockTargets.push(el);
                 } else if (tag === 'INPUT' && (!el.type || el.type === 'text' || el.type === 'search')) {
@@ -1030,9 +1109,11 @@
                     el.style.setProperty('box-sizing', 'border-box', 'important');
                     el.style.setProperty('direction', 'rtl', 'important');
                 } else if ((tag === 'BUTTON' && el.classList && el.classList.contains('elicitation-item')) || tag === 'SUGGESTION-CHIP' || tag === 'MAT-CHIP' || (el.classList && el.classList.contains('suggestion-chip'))) {
-                    el.style.setProperty('direction', 'rtl', 'important');
-                    el.style.setProperty('text-align', 'right', 'important');
-                    el.style.setProperty('box-sizing', 'border-box', 'important');
+                    if (el.closest('model-response, chat-turn, elicitations, [class*="elicitations"]')) {
+                        el.style.setProperty('direction', 'rtl', 'important');
+                        el.style.setProperty('text-align', 'right', 'important');
+                        el.style.setProperty('box-sizing', 'border-box', 'important');
+                    }
                 } else if (tag === 'DIV') {
                     const cls = el.className || '';
                     if (typeof cls === 'string') {
@@ -1079,17 +1160,6 @@
                             el.style.setProperty('direction', 'rtl', 'important');
                             el.style.setProperty('text-align', 'right', 'important');
                             blockTargets.push(el);
-                        } else if (cls.match(/conversation|history|side-nav|recent|notebook/i)) {
-                            // Check if this sidebar item has Persian text
-                            const txt = el.textContent;
-                            if (txt && txt.trim() && detectDirection(txt) === 'rtl') {
-                                el.setAttribute('dir', 'rtl');
-                                el.style.setProperty('direction', 'rtl', 'important');
-                                el.style.setProperty('text-align', 'right', 'important');
-                                if (el.children.length === 0) {
-                                    blockTargets.push(el);
-                                }
-                            }
                         } else if (cls.match(/message-content|model-response|response-container/i)) {
                             containerTargets.push(el);
                         } else if (cls.match(/user-query|user-turn|chat-turn|user-query-container/i)) {
@@ -1098,7 +1168,9 @@
                         } else if (cls.match(/monaco-chat-request/i)) {
                             el.style.setProperty('direction', 'ltr', 'important');
                         } else if (el.children.length === 0 && el.textContent.trim().length > 0) {
-                            blockTargets.push(el);
+                            if (!el.closest('.top-bar, [class*="top-bar"], header, [class*="header"], [class*="input-area"], [class*="bottom-container"], input-area, rich-textarea')) {
+                                blockTargets.push(el);
+                            }
                         }
                     }
                 }

@@ -208,3 +208,23 @@ test('ide-payload.js supports single suggestion chips and chip containers', () =
     // 3. Chip containers centered to 768px with RTL direction
     assert.match(content, /suggestion-chips[^}]*direction:\s*rtl\s*!important/s);
 });
+
+test('ide-payload.js strictly protects application chrome, input bar, and icons from layout inversion', () => {
+    const payloadPath = path.join(__dirname, '..', 'bin', 'ide-payload.js');
+    const content = fs.readFileSync(payloadPath, 'utf8');
+
+    // 1. Chrome & Input areas locked to LTR layout
+    assert.match(content, /side-navigation-v2/);
+    assert.match(content, /input-area/);
+    assert.match(content, /\[class\*="bottom-container"\]/);
+    assert.match(content, /\[class\*="top-bar"\]/);
+    assert.match(content, /rich-textarea\s*\{[^}]*direction:\s*ltr\s*!important/s);
+
+    // 2. Icon elements protected
+    assert.match(content, /mat-icon/);
+    assert.match(content, /google-symbols/);
+    assert.match(content, /\['MAT-ICON',\s*'I'\]\.includes\(tag\)/);
+
+    // 3. Input bar typing dynamically isolated to RTL
+    assert.match(content, /rich-textarea\s+\[contenteditable="true"\]\[dir="rtl"\]/);
+});
