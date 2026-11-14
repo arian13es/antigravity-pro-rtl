@@ -227,8 +227,12 @@ test('ide-payload.js strictly protects application chrome, input bar, and icons 
     assert.match(content, /google-symbols/);
     assert.match(content, /'Google Symbols'/);
     assert.match(content, /'Material Symbols Outlined'/);
+    assert.match(content, /\[class\*="icon-button"\]/);
     assert.match(content, /clsStr\.includes\('google-symbols'\)/);
     assert.match(content, /clsStr\.includes\('material-symbols'\)/);
+    assert.match(content, /el\.closest\('button:not\(\.elicitation-item\)/);
+    assert.doesNotMatch(content, /model-response span:not/);
+    assert.doesNotMatch(content, /message-content span,/);
 
     // 3. Input bar typing dynamically isolated to RTL
     assert.match(content, /rich-textarea\s+\[contenteditable="true"\]\[dir="rtl"\]/);

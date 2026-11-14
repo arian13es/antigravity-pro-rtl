@@ -133,13 +133,11 @@
             .chat-input-part,
             message-content p,
             message-content li,
-            message-content span,
             .message-content p,
             .message-content li,
-            .message-content span,
             model-response p,
             model-response li,
-            model-response span:not([class*="symbol"]):not([class*="icon"]),
+            model-response blockquote,
             .query-content,
             rich-textarea [contenteditable="true"],
             .text-input-field textarea,
@@ -625,7 +623,13 @@
             .google-symbols,
             .material-symbols-outlined,
             .material-symbols-rounded,
-            .material-symbols-sharp {
+            .material-symbols-sharp,
+            [class*="icon-button"] *,
+            button[class*="icon"] *,
+            [class*="actions"] button *,
+            [class*="response-actions"] button *,
+            [class*="chip__icon"],
+            [class*="leading-icon"] {
                 font-family: 'Google Symbols', 'Material Symbols Outlined', 'Material Symbols Rounded', 'Material Symbols Sharp', 'Material Icons' !important;
                 direction: ltr !important;
                 font-style: normal !important;
@@ -635,7 +639,7 @@
                 text-transform: none !important;
                 white-space: nowrap !important;
                 word-wrap: normal !important;
-                unicode-bidi: isolate !important;
+                unicode-bidi: normal !important;
             }
 
             /* Inside input bar, only user Persian text is RTL */
@@ -1104,11 +1108,18 @@
                     clsStr.includes('material-symbols') ||
                     clsStr.includes('material-icons') ||
                     clsStr.includes('mat-icon') ||
+                    clsStr.includes('icon-button') ||
+                    clsStr.includes('chip__icon') ||
                     clsStr.includes('katex') ||
                     clsStr.includes('monaco-editor')
                 ) return;
 
-                const chromeSelector = 'header, [role="banner"], [role="navigation"], [role="toolbar"], mat-toolbar, .top-bar, [class*="top-bar"], [class*="header"], [class*="app-bar"], [class*="toolbar"], [class*="input-area"], [class*="bottom-container"], input-area, rich-textarea, [class*="pill-container"]';
+                // Never mutate buttons or button children (copy, share, retry, add, mic) unless it's an elicitation card
+                if (el.closest('button:not(.elicitation-item), [role="button"]:not(.elicitation-item), [class*="icon-button"]')) {
+                    return;
+                }
+
+                const chromeSelector = 'header, [role="banner"], [role="navigation"], [role="toolbar"], mat-toolbar, .top-bar, [class*="top-bar"], [class*="header"], [class*="app-bar"], [class*="toolbar"], [class*="input-area"], [class*="bottom-container"], input-area, rich-textarea, [class*="pill-container"], input-container, [class*="input-container"], chat-window, [class*="composer"], [class*="chat-input"], [class*="prompt"]';
 
                 if (['P', 'LI', 'H1', 'H2', 'H3', 'H4', 'H5', 'H6', 'BLOCKQUOTE', 'TD', 'TH'].includes(tag)) {
                     blockTargets.push(el);
