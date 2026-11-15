@@ -108,9 +108,10 @@ test('ide-payload.js enforces elicitations layout, suggestion cards, and model a
     assert.match(content, /@media\s*\(max-width:\s*768px\)/);
     assert.match(content, /flex-direction:\s*column\s*!important/);
 
-    // 6. walkDOM scopes attachment alignment strictly to user queries and isolates model attachments
+    // 6. walkDOM scopes user attachments to user queries, and preserves inline model attachments and citations
     assert.match(content, /el\.closest\('user-query,\s*\.user-query/);
-    assert.match(content, /el\.closest\('model-response,\s*message-content/);
+    assert.match(content, /\[class\*="attachment-chip"\]/);
+    assert.match(content, /width:\s*auto\s*!important/);
     assert.match(content, /tag === 'ELICITATIONS'/);
     assert.match(content, /tag === 'BUTTON' && el\.classList && el\.classList\.contains\('elicitation-item'\)/);
 });
@@ -139,7 +140,6 @@ test('ide-payload.js preserves code blocks, KaTeX math, user attachments, and se
     assert.match(content, /el\.style\.setProperty\('align-self',\s*'flex-end',\s*'important'\)/);
     assert.match(content, /el\.style\.setProperty\('margin-left',\s*'auto',\s*'important'\)/);
     assert.match(content, /el\.style\.setProperty\('margin-right',\s*'0',\s*'important'\)/);
-    assert.match(content, /el\.style\.setProperty\('align-self',\s*'center',\s*'important'\)/);
 
     // 4. Settings Widget UI & Interaction Architecture
     assert.match(content, /\.rtl-widget-container/);
@@ -175,15 +175,14 @@ test('ide-payload.js enforces sidebar navigation and conversation list RTL styli
     const payloadPath = path.join(__dirname, '..', 'bin', 'ide-payload.js');
     const content = fs.readFileSync(payloadPath, 'utf8');
 
-    // 1. Sidebar font inclusion
-    assert.match(content, /side-navigation-v2\s*\[dir="rtl"\]/);
-    assert.match(content, /\[class\*="conversation-title"\]/);
-    assert.match(content, /\[class\*="history-item"\]/);
-    assert.match(content, /\[class\*="notebook-title"\]/);
+    // 1. Sidebar font inclusion for Persian titles
+    assert.match(content, /\[class\*="conversation-title"\]\[dir="rtl"\]/);
+    assert.match(content, /\[class\*="history-item"\]\[dir="rtl"\]/);
+    assert.match(content, /\[class\*="notebook-title"\]\[dir="rtl"\]/);
 
-    // 2. Sidebar RTL direction and text alignment
-    assert.match(content, /\[class\*="conversation"\]\s*\[dir="rtl"\]/);
-    assert.match(content, /side-nav\s*\[dir="rtl"\]/);
+    // 2. Sidebar RTL direction and text alignment scoped to text span
+    assert.match(content, /side-navigation-v2\s*\[dir="rtl"\]\s*span/);
+    assert.match(content, /side-nav\s*\[dir="rtl"\]\s*span/);
 
     // 3. Leaf SPAN/A inspection in walkDOM
     assert.match(content, /\['SPAN',\s*'A',\s*'LABEL'\]\.includes\(tag\)/);
@@ -220,13 +219,12 @@ test('ide-payload.js strictly protects application chrome, input bar, and icons 
     assert.match(content, /\[class\*="top-bar"\]/);
     assert.match(content, /\[role="banner"\]/);
     assert.match(content, /mat-toolbar/);
-    assert.match(content, /rich-textarea\s*\{[^}]*direction:\s*ltr\s*!important/s);
+    assert.match(content, /rich-textarea[^}]*direction:\s*ltr\s*!important/s);
 
-    // 2. Icon elements strictly protected with native font ligatures stack
+    // 2. Icon elements strictly protected from layout mutation and bidi corruption
     assert.match(content, /mat-icon/);
     assert.match(content, /google-symbols/);
-    assert.match(content, /'Google Symbols'/);
-    assert.match(content, /'Material Symbols Outlined'/);
+    assert.match(content, /material-symbols/);
     assert.match(content, /\[class\*="icon-button"\]/);
     assert.match(content, /clsStr\.includes\('google-symbols'\)/);
     assert.match(content, /clsStr\.includes\('material-symbols'\)/);
@@ -236,4 +234,27 @@ test('ide-payload.js strictly protects application chrome, input bar, and icons 
 
     // 3. Input bar typing dynamically isolated to RTL
     assert.match(content, /rich-textarea\s+\[contenteditable="true"\]\[dir="rtl"\]/);
+});
+
+test('ide-payload.js scopes directional styling strictly to content and protects inline chips', () => {
+    const payloadPath = path.join(__dirname, '..', 'bin', 'ide-payload.js');
+    const content = fs.readFileSync(payloadPath, 'utf8');
+
+    // 1. No naked unscoped global [dir="rtl"] { direction: rtl !important; }
+    assert.doesNotMatch(content, /^\s*\[dir="rtl"\]\s*\{/m);
+
+    // 2. Attachment chips and citations are protected with width: auto
+    assert.match(content, /\[class\*="source-chip"\]/);
+    assert.match(content, /mat-chip:not\(\.elicitation-item\)/);
+    assert.match(content, /display:\s*inline-flex\s*!important/);
+    assert.match(content, /vertical-align:\s*middle\s*!important/);
+
+    // 3. No font-family override on buttons or icons
+    assert.doesNotMatch(content, /font-family:\s*['"]Google Symbols['"]/);
+    assert.doesNotMatch(content, /font-family:\s*['"]Material Symbols/);
+
+    // 4. Input containers and response actions protected with [dir="rtl"] overrides
+    assert.match(content, /input-area\[dir="rtl"\]/);
+    assert.match(content, /\[class\*="response-actions"\]\[dir="rtl"\]/);
+    assert.match(content, /\[class\*="composer"\]\[dir="rtl"\]/);
 });

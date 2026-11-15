@@ -147,9 +147,9 @@
             model-response mat-chip [class*="text"],
             chat-turn suggestion-chip [class*="text"],
             chat-turn mat-chip [class*="text"],
-            [class*="conversation-title"],
-            [class*="history-item"],
-            [class*="notebook-title"],
+            [class*="conversation-title"][dir="rtl"],
+            [class*="history-item"][dir="rtl"],
+            [class*="notebook-title"][dir="rtl"],
             p[dir="rtl"],
             li[dir="rtl"],
             h1[dir="rtl"],
@@ -160,12 +160,8 @@
             h6[dir="rtl"],
             blockquote[dir="rtl"],
             td[dir="rtl"],
-            th[dir="rtl"],
-            side-navigation-v2 [dir="rtl"],
-            side-nav [dir="rtl"],
-            nav [dir="rtl"],
-            aside [dir="rtl"] {
-                font-family: ${faFontName}, ${enFontStr}var(--vscode-font-family, system-ui), "Segoe UI Emoji", sans-serif !important;
+            th[dir="rtl"] {
+                font-family: ${faFontName}, ${enFontStr}var(--font-family, var(--vscode-font-family, system-ui)), "Segoe UI Emoji", sans-serif !important;
             }
 
             .smart-rtl-text-node,
@@ -189,26 +185,52 @@
                 font-size: inherit !important;
             }
 
-            /* Directional alignment contracts */
-            [dir="rtl"] {
-                direction: rtl !important;
-                text-align: right !important;
-            }
-
-            [dir="ltr"] {
-                direction: ltr !important;
-                text-align: left !important;
-            }
-
-            p[dir="rtl"], h1[dir="rtl"], h2[dir="rtl"], h3[dir="rtl"], h4[dir="rtl"], h5[dir="rtl"], h6[dir="rtl"] {
+            /* Directional alignment contracts (Strictly content and text nodes) */
+            p[dir="rtl"],
+            li[dir="rtl"],
+            h1[dir="rtl"],
+            h2[dir="rtl"],
+            h3[dir="rtl"],
+            h4[dir="rtl"],
+            h5[dir="rtl"],
+            h6[dir="rtl"],
+            blockquote[dir="rtl"],
+            td[dir="rtl"],
+            th[dir="rtl"],
+            .smart-rtl-text-node[dir="rtl"],
+            .query-content[dir="rtl"],
+            [class*="query-content"][dir="rtl"],
+            .elicitation-label[dir="rtl"],
+            .elicitation-item[dir="rtl"],
+            suggestion-chip[dir="rtl"],
+            mat-chip[dir="rtl"],
+            rich-textarea [contenteditable="true"][dir="rtl"],
+            textarea[dir="rtl"],
+            input[dir="rtl"] {
                 direction: rtl !important;
                 text-align: right !important;
                 unicode-bidi: isolate !important;
             }
 
-            li[dir="rtl"] {
-                direction: rtl !important;
-                text-align: right !important;
+            p[dir="ltr"],
+            li[dir="ltr"],
+            h1[dir="ltr"],
+            h2[dir="ltr"],
+            h3[dir="ltr"],
+            h4[dir="ltr"],
+            h5[dir="ltr"],
+            h6[dir="ltr"],
+            blockquote[dir="ltr"],
+            td[dir="ltr"],
+            th[dir="ltr"],
+            .smart-rtl-text-node[dir="ltr"],
+            .query-content[dir="ltr"],
+            [class*="query-content"][dir="ltr"],
+            rich-textarea [contenteditable="true"][dir="ltr"],
+            textarea[dir="ltr"],
+            input[dir="ltr"] {
+                direction: ltr !important;
+                text-align: left !important;
                 unicode-bidi: isolate !important;
             }
 
@@ -253,37 +275,26 @@
             .elicitations-container,
             .elicitations-message,
             model-response suggestion-chips,
-            model-response suggestion-chip,
             model-response action-chips,
             model-response mat-chip-set,
-            model-response mat-chip,
             chat-turn suggestion-chips,
-            chat-turn suggestion-chip,
             chat-turn action-chips,
             chat-turn mat-chip-set,
-            chat-turn mat-chip,
             elicitations suggestion-chips,
-            elicitations suggestion-chip,
             elicitations action-chips,
             elicitations mat-chip-set,
-            elicitations mat-chip,
-            model-response .attachment-container,
-            message-content .attachment-container,
-            .attachment-container.md-has-block-component,
             .response-container [class*="chip-container"],
             .response-container [class*="chips"],
-            .response-container [class*="suggestion"],
-            .response-container [class*="followup"],
-            .response-container [class*="follow-up"],
+            .response-container [class*="suggestions-container"],
+            .response-container [class*="followup-container"],
             model-response [class*="chip-container"],
             model-response [class*="chips"],
-            model-response [class*="suggestion"],
-            model-response [class*="followup"],
-            model-response [class*="follow-up"],
-            chat-turn [class*="suggestion"],
-            chat-turn [class*="followup"],
-            chat-turn [class*="follow-up"],
-            chat-turn [class*="chip"],
+            model-response [class*="suggestions-container"],
+            model-response [class*="followup-container"],
+            chat-turn [class*="chip-container"],
+            chat-turn [class*="chips-container"],
+            chat-turn [class*="suggestions-container"],
+            chat-turn [class*="followup-container"],
             [class*="suggestion-container"],
             [class*="suggestions-container"],
             [class*="followup-container"],
@@ -300,10 +311,26 @@
             model-response .attachment-container,
             message-content .attachment-container,
             .attachment-container.md-has-block-component {
+                max-width: 768px !important;
                 margin-inline-start: auto !important;
                 margin-inline-end: auto !important;
                 align-self: center !important;
                 overflow: visible !important;
+            }
+
+            /* Inline attachment chips, citation pills, and file references (e.g. 1000165706.JPG) */
+            [class*="file-chip"],
+            [class*="attachment-chip"],
+            [class*="source-chip"],
+            [class*="citation"],
+            [class*="file-preview"],
+            mat-chip:not(.elicitation-item) {
+                width: auto !important;
+                max-width: 100% !important;
+                display: inline-flex !important;
+                align-items: center !important;
+                vertical-align: middle !important;
+                box-sizing: border-box !important;
             }
 
             /* Suggestion title / question text */
@@ -387,17 +414,16 @@
                 overflow: hidden !important;
             }
 
-            /* Single inline suggestion chips (like 'Yes ↪' in Screenshot 4) - Scoped to responses */
+            /* Single inline suggestion chips (like 'Yes ↪' suggestions) - Scoped to responses */
             model-response suggestion-chip,
-            model-response mat-chip,
             chat-turn suggestion-chip,
-            chat-turn mat-chip,
             chat-turn [class*="suggestion-chip"],
             model-response [class*="suggestion-chip"],
             chat-turn button[class*="suggestion"],
             model-response button[class*="suggestion"],
             elicitations suggestion-chip,
-            elicitations mat-chip {
+            suggestion-chip[dir="rtl"],
+            mat-chip[dir="rtl"] {
                 display: inline-flex !important;
                 flex-direction: row !important;
                 align-items: center !important;
@@ -568,52 +594,86 @@
                 margin-right: 0 !important;
             }
 
-            /* Sidebar conversation titles, notebook items, and navigation entries */
-            [class*="conversation-title"],
-            [class*="history-item"],
-            [class*="notebook-title"],
-            [class*="conversation"] [dir="rtl"],
-            [class*="history"] [dir="rtl"],
-            [class*="recent"] [dir="rtl"],
-            [class*="nav-item"] [dir="rtl"],
-            [class*="side-nav"] [dir="rtl"],
-            side-navigation-v2 [dir="rtl"],
-            side-nav [dir="rtl"],
-            nav [dir="rtl"],
-            aside [dir="rtl"] {
+            /* Sidebar conversation titles and notebook text labels: strictly target the text span */
+            [class*="conversation-title"][dir="rtl"],
+            [class*="history-item"][dir="rtl"],
+            [class*="notebook-title"][dir="rtl"],
+            side-navigation-v2 [dir="rtl"] span,
+            side-nav [dir="rtl"] span {
                 direction: rtl !important;
-                text-align: right !important;
+                text-align: start !important;
                 unicode-bidi: isolate !important;
             }
 
-            /* Structural Chrome & Input Isolation (Protects application layout from inversion) */
+            /* Structural Chrome, Sidebars, and Input Isolation (Protects application layout from inversion) */
             side-navigation-v2,
+            side-navigation-v2[dir="rtl"],
             side-nav,
+            side-nav[dir="rtl"],
+            [class*="side-nav"],
+            [class*="side-nav"][dir="rtl"],
             nav,
+            nav[dir="rtl"],
             aside,
+            aside[dir="rtl"],
             header,
+            header[dir="rtl"],
             [role="banner"],
+            [role="banner"][dir="rtl"],
             [role="navigation"],
+            [role="navigation"][dir="rtl"],
             [role="toolbar"],
+            [role="toolbar"][dir="rtl"],
             mat-toolbar,
+            mat-toolbar[dir="rtl"],
             .top-bar,
+            .top-bar[dir="rtl"],
             [class*="top-bar"],
+            [class*="top-bar"][dir="rtl"],
             [class*="header"],
+            [class*="header"][dir="rtl"],
             [class*="app-bar"],
+            [class*="app-bar"][dir="rtl"],
             [class*="toolbar"],
+            [class*="toolbar"][dir="rtl"],
             .conversation-container,
+            .conversation-container[dir="rtl"],
             input-area,
+            input-area[dir="rtl"],
             .input-area,
+            .input-area[dir="rtl"],
             [class*="input-area"],
+            [class*="input-area"][dir="rtl"],
+            input-container,
+            input-container[dir="rtl"],
+            [class*="input-container"],
+            [class*="input-container"][dir="rtl"],
             [class*="bottom-container"],
+            [class*="bottom-container"][dir="rtl"],
             [class*="chat-window-input"],
+            [class*="chat-window-input"][dir="rtl"],
             [class*="input-box"],
+            [class*="input-box"][dir="rtl"],
+            .text-input-field,
+            .text-input-field[dir="rtl"],
+            [class*="composer"],
+            [class*="composer"][dir="rtl"],
+            [class*="prompt-box"],
+            [class*="prompt-box"][dir="rtl"],
             [class*="pill-container"],
-            rich-textarea {
+            [class*="pill-container"][dir="rtl"],
+            rich-textarea,
+            rich-textarea[dir="rtl"],
+            [class*="response-actions"],
+            [class*="response-actions"][dir="rtl"],
+            [class*="actions-area"],
+            [class*="actions-area"][dir="rtl"],
+            [class*="message-actions"],
+            [class*="message-actions"][dir="rtl"] {
                 direction: ltr !important;
             }
 
-            /* Protect icons from font overriding, ligatures breakdown, and direction mutation */
+            /* Protect icons, buttons, and action controls from font corruption, bidi isolation, and inversion */
             mat-icon,
             [class*="mat-icon"],
             [class*="material-symbols"],
@@ -624,21 +684,15 @@
             .material-symbols-outlined,
             .material-symbols-rounded,
             .material-symbols-sharp,
-            [class*="icon-button"] *,
-            button[class*="icon"] *,
-            [class*="actions"] button *,
-            [class*="response-actions"] button *,
+            button,
+            [role="button"],
+            [class*="icon-button"],
             [class*="chip__icon"],
             [class*="leading-icon"] {
-                font-family: 'Google Symbols', 'Material Symbols Outlined', 'Material Symbols Rounded', 'Material Symbols Sharp', 'Material Icons' !important;
                 direction: ltr !important;
-                font-style: normal !important;
-                font-weight: normal !important;
                 letter-spacing: normal !important;
-                line-height: 1 !important;
-                text-transform: none !important;
+                line-height: normal !important;
                 white-space: nowrap !important;
-                word-wrap: normal !important;
                 unicode-bidi: normal !important;
             }
 
@@ -1119,7 +1173,7 @@
                     return;
                 }
 
-                const chromeSelector = 'header, [role="banner"], [role="navigation"], [role="toolbar"], mat-toolbar, .top-bar, [class*="top-bar"], [class*="header"], [class*="app-bar"], [class*="toolbar"], [class*="input-area"], [class*="bottom-container"], input-area, rich-textarea, [class*="pill-container"], input-container, [class*="input-container"], chat-window, [class*="composer"], [class*="chat-input"], [class*="prompt"]';
+                const chromeSelector = 'header, [role="banner"], [role="navigation"], [role="toolbar"], mat-toolbar, .top-bar, [class*="top-bar"], [class*="header"], [class*="app-bar"], [class*="toolbar"], [class*="input-area"], [class*="bottom-container"], input-area, rich-textarea, [class*="pill-container"], input-container, [class*="input-container"], chat-window, [class*="composer"], [class*="chat-input"], [class*="prompt"], side-navigation-v2, side-nav, [class*="side-nav"], nav, aside';
 
                 if (['P', 'LI', 'H1', 'H2', 'H3', 'H4', 'H5', 'H6', 'BLOCKQUOTE', 'TD', 'TH'].includes(tag)) {
                     blockTargets.push(el);
@@ -1148,8 +1202,11 @@
                     el.style.setProperty('direction', 'rtl', 'important');
                 } else if ((tag === 'BUTTON' && el.classList && el.classList.contains('elicitation-item')) || tag === 'SUGGESTION-CHIP' || tag === 'MAT-CHIP' || (el.classList && el.classList.contains('suggestion-chip'))) {
                     if (el.closest('model-response, chat-turn, elicitations, [class*="elicitations"]')) {
-                        el.style.setProperty('direction', 'rtl', 'important');
-                        el.style.setProperty('text-align', 'right', 'important');
+                        const chipText = el.textContent || '';
+                        if (detectDirection(chipText) === 'rtl') {
+                            el.style.setProperty('direction', 'rtl', 'important');
+                            el.style.setProperty('text-align', 'right', 'important');
+                        }
                         el.style.setProperty('box-sizing', 'border-box', 'important');
                     }
                 } else if (tag === 'DIV') {
@@ -1161,19 +1218,11 @@
                             el.style.setProperty('margin-right', '0', 'important');
                             blockTargets.push(el);
                         } else if (cls.match(/file-preview|attachment|media-preview|image-preview/i)) {
-                            // CRITICAL FIX: Only apply user right-alignment if strictly inside user-query
+                            // Only apply user right-alignment if strictly inside user-query
                             if (el.closest('user-query, .user-query, [class*="user-query"], [class*="user-turn"], .monaco-chat-request')) {
                                 el.style.setProperty('align-self', 'flex-end', 'important');
                                 el.style.setProperty('margin-left', 'auto', 'important');
                                 el.style.setProperty('margin-right', '0', 'important');
-                            } else if (el.closest('model-response, message-content, [class*="model-response"], [class*="message-content"]')) {
-                                // Model-side attachments (like Gemini's <div class="attachment-container">) must be centered and constrained
-                                el.style.setProperty('align-self', 'center', 'important');
-                                el.style.setProperty('margin-left', 'auto', 'important');
-                                el.style.setProperty('margin-right', 'auto', 'important');
-                                el.style.setProperty('max-width', '768px', 'important');
-                                el.style.setProperty('width', '100%', 'important');
-                                el.style.setProperty('box-sizing', 'border-box', 'important');
                             }
                         } else if (cls.match(/query-actions/i)) {
                             if (el.closest('user-query, .user-query, [class*="user-query"], [class*="user-turn"], .monaco-chat-request')) {
@@ -1183,7 +1232,7 @@
                                 el.style.setProperty('display', 'flex', 'important');
                                 el.style.setProperty('justify-content', 'flex-end', 'important');
                             }
-                        } else if (cls.match(/suggestion|followup|follow-up|elicitations/i)) {
+                        } else if (cls.match(/suggestion-container|suggestions-container|followup-container|follow-up-container|elicitations-container/i)) {
                             el.style.setProperty('max-width', '768px', 'important');
                             el.style.setProperty('width', '100%', 'important');
                             el.style.setProperty('margin-left', 'auto', 'important');
