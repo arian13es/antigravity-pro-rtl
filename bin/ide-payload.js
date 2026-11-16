@@ -1197,6 +1197,36 @@
     const SKIP_TAGS = ['PRE', 'CODE', 'SVG', 'MATH', 'SCRIPT', 'STYLE', 'MAT-ICON', 'I'];
     const CHROME_SELECTOR = 'header, [role="banner"], [role="navigation"], [role="toolbar"], mat-toolbar, .top-bar, [class*="top-bar"], [class*="header"], [class*="app-bar"], [class*="toolbar"], [class*="input-area"], [class*="bottom-container"], input-area, rich-textarea, [class*="pill-container"], input-container, [class*="input-container"], chat-window, [class*="composer"], [class*="chat-input"], [class*="prompt"], side-navigation-v2, side-nav, [class*="side-nav"], nav, aside';
 
+    /* Subtrees whose text must NOT influence paragraph direction detection:
+       Latin file names inside inline source chips (image_*.jpg, doc.pdf), UI
+       buttons, citations, math renderers, code blocks and icons. Without this,
+       a Persian list row like "ب) 475 [image_eee7ff.jpg chip]" sees 16 Latin
+       letters against one Persian letter and gets flipped to LTR, breaking the
+       row alignment and bidi order. */
+    const DIR_TEXT_SKIP = 'source-inline-chip, sources-carousel-inline, [class*="source-inline-chip"], [class*="carousel-inline"], [class*="citation"], [class*="footnote"], button, [role="button"], [class*="chip"], code, pre, kbd, samp, math, .katex, [class*="katex"], [class*="mathjax"], mjx-container, [class*="math-inline"], [class*="math-block"], [class*="math-display"], mat-icon, [class*="mat-icon"], [class*="material-symbols"], [class*="icon"], img, svg';
+
+    function dirTextOf(el) {
+        // Fast path: no direction-irrelevant descendants at all.
+        let skip = null;
+        try { skip = el.querySelector(DIR_TEXT_SKIP); } catch (e) { skip = null; }
+        if (!skip) return el.textContent;
+        let out = '';
+        const walk = (node) => {
+            const kids = node.childNodes;
+            for (let i = 0; i < kids.length; i++) {
+                const c = kids[i];
+                if (c.nodeType === 3) {
+                    out += c.nodeValue;
+                } else if (c.nodeType === 1) {
+                    if (c.matches && c.matches(DIR_TEXT_SKIP)) continue;
+                    walk(c);
+                }
+            }
+        };
+        walk(el);
+        return out;
+    }
+
     // Bumped when forceRTL changes so memoized decisions are recomputed.
     let dirGeneration = 0;
 
@@ -1217,7 +1247,7 @@
         if (el.tagName === 'TEXTAREA' || el.tagName === 'INPUT') {
             text = el.value;
         } else {
-            text = el.textContent;
+            text = dirTextOf(el);
         }
         if (!text || !text.trim()) return null;
         const s = stateFor(el);
