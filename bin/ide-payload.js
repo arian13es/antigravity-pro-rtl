@@ -630,12 +630,16 @@
                 margin-right: 0 !important;
             }
 
-            /* Sidebar conversation titles and notebook text labels: strictly target the text span */
+            /* Sidebar conversation titles and notebook text labels: strictly target the text span.
+               Excluded from response/chat content: Gemini nests the conversation inside a
+               side-nav/side-navigation-v2 wrapper, so an unscoped descendant selector would
+               also hit every span inside model-response (including KaTeX math spans) and
+               force direction:rtl on formulas with higher specificity than the math LTR rules. */
             [class*="conversation-title"][dir="rtl"],
             [class*="history-item"][dir="rtl"],
             [class*="notebook-title"][dir="rtl"],
-            side-navigation-v2 [dir="rtl"] span,
-            side-nav [dir="rtl"] span {
+            side-navigation-v2 [dir="rtl"] span:not(model-response span):not(chat-turn span):not([class*="katex"]):not([class*="math"]):not([class*="mjx"]),
+            side-nav [dir="rtl"] span:not(model-response span):not(chat-turn span):not([class*="katex"]):not([class*="math"]):not([class*="mjx"]) {
                 direction: rtl !important;
                 text-align: start !important;
                 unicode-bidi: isolate !important;
@@ -739,6 +743,38 @@
                 direction: rtl !important;
                 text-align: right !important;
                 unicode-bidi: isolate !important;
+            }
+
+            /* ==========================================================================
+               MATH LTR SHIELD (final cascade position)
+               Gemini nests the whole conversation inside a side-nav/side-navigation-v2
+               wrapper, so legacy [dir="rtl"] descendant rules can out-rank the math
+               rules above by specificity. This shield repeats the LTR contract at the
+               end of the sheet with equal-or-higher specificity, so math renderers
+               (KaTeX / MathJax) can never be flipped back to RTL, no matter what
+               direction rules precede them.
+               ========================================================================== */
+            model-response span[class*="katex"], model-response span[class*="katex"] *,
+            chat-turn span[class*="katex"], chat-turn span[class*="katex"] *,
+            model-response span[class*="math-inline"], model-response span[class*="math-inline"] *,
+            chat-turn span[class*="math-inline"], chat-turn span[class*="math-inline"] *,
+            model-response span[class*="math-display"], model-response span[class*="math-display"] *,
+            chat-turn span[class*="math-display"], chat-turn span[class*="math-display"] *,
+            model-response span[class*="mathjax"], model-response span[class*="mathjax"] *,
+            chat-turn span[class*="mathjax"], chat-turn span[class*="mathjax"] *,
+            model-response mjx-container, model-response mjx-container *,
+            chat-turn mjx-container, chat-turn mjx-container * {
+                direction: ltr !important;
+                unicode-bidi: isolate !important;
+                text-align: left !important;
+            }
+
+            model-response span.katex-display, chat-turn span.katex-display,
+            model-response span[class*="katex-display"], chat-turn span[class*="katex-display"],
+            model-response math-display, chat-turn math-display {
+                direction: ltr !important;
+                unicode-bidi: isolate !important;
+                text-align: center !important;
             }
         `;
         if (isRTL) injectStyle('smart-ide-rtl-style', dynamicCSS);
