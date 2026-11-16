@@ -308,15 +308,15 @@
             elicitations suggestion-chips,
             elicitations action-chips,
             elicitations mat-chip-set,
-            .response-container [class*="chip-container"],
+            .response-container [class*="chip-container"]:not([class*="source-inline-chip"]),
             .response-container [class*="chips"],
             .response-container [class*="suggestions-container"],
             .response-container [class*="followup-container"],
-            model-response [class*="chip-container"],
+            model-response [class*="chip-container"]:not([class*="source-inline-chip"]),
             model-response [class*="chips"],
             model-response [class*="suggestions-container"],
             model-response [class*="followup-container"],
-            chat-turn [class*="chip-container"],
+            chat-turn [class*="chip-container"]:not([class*="source-inline-chip"]),
             chat-turn [class*="chips-container"],
             chat-turn [class*="suggestions-container"],
             chat-turn [class*="followup-container"],
@@ -408,11 +408,11 @@
             elicitations suggestion-chips,
             elicitations action-chips,
             elicitations mat-chip-set,
-            model-response [class*="chip-container"],
+            model-response [class*="chip-container"]:not([class*="source-inline-chip"]),
             model-response [class*="chips-container"],
             model-response [class*="suggestion-list"],
             model-response [class*="suggestions-list"],
-            chat-turn [class*="chip-container"],
+            chat-turn [class*="chip-container"]:not([class*="source-inline-chip"]),
             chat-turn [class*="chips-container"],
             chat-turn [class*="suggestion-list"],
             chat-turn [class*="suggestions-list"] {
@@ -504,10 +504,10 @@
             }
 
             /* Chip buttons flex alignment inside responses */
-            model-response [class*="chip-container"],
+            model-response [class*="chip-container"]:not([class*="source-inline-chip"]),
             model-response [class*="chips"],
             model-response [class*="suggestion-list"],
-            chat-turn [class*="chip-container"],
+            chat-turn [class*="chip-container"]:not([class*="source-inline-chip"]),
             chat-turn [class*="chips"],
             chat-turn [class*="suggestion-list"] {
                 display: flex !important;
@@ -520,9 +520,22 @@
                 direction: rtl !important;
             }
 
-            [dir="rtl"] model-response [class*="chip-container"],
+            /* Inline source-citation chips (uploaded file references such as
+               image_x.jpg or doc.pdf rendered inside message text and table
+               cells) are inline components in Gemini's native design. They
+               must never be stretched into full-width flex rows, which makes
+               them overlap neighbouring text lines. */
+            source-inline-chip,
+            sources-carousel-inline,
+            [class*="source-inline-chip"] {
+                width: auto !important;
+                max-width: 100% !important;
+                align-self: auto !important;
+            }
+
+            [dir="rtl"] model-response [class*="chip-container"]:not([class*="source-inline-chip"]),
             [dir="rtl"] model-response [class*="chips"],
-            [dir="rtl"] chat-turn [class*="chip-container"],
+            [dir="rtl"] chat-turn [class*="chip-container"]:not([class*="source-inline-chip"]),
             [dir="rtl"] chat-turn [class*="chips"] {
                 direction: rtl !important;
                 justify-content: flex-start !important;
