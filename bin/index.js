@@ -73,8 +73,22 @@ async function patchIDE(appDir, isRestore) {
     
     let htmlFiles = [];
     for (const dir of htmlDirs) {
+        const isWebviewPre = path.basename(dir) === 'pre';
         const files = fs.readdirSync(dir).filter(f => f.endsWith('.html'));
-        files.forEach(f => htmlFiles.push(path.join(dir, f)));
+        files.forEach(f => {
+            const htmlPath = path.join(dir, f);
+            if (isWebviewPre) {
+                // Webview shells spawn one engine copy per iframe and slow every panel
+                // down; only touch them when restoring a patch left by older versions.
+                if (isRestore && (fs.existsSync(htmlPath + '.bak') || fs.readFileSync(htmlPath, 'utf8').includes('ide-payload.js'))) {
+                    htmlFiles.push(htmlPath);
+                }
+            } else if (isRestore || /^workbench.*\.html$/i.test(f)) {
+                // Patch mode: only the main workbench entrypoints. Restore mode:
+                // revisit every HTML that an older version could have patched.
+                htmlFiles.push(htmlPath);
+            }
+        });
     }
 
     if (htmlFiles.length === 0) {
@@ -88,6 +102,22 @@ async function patchIDE(appDir, isRestore) {
             const backupHtml = htmlPath + '.bak';
             if (fs.existsSync(backupHtml)) {
                 fs.copyFileSync(backupHtml, htmlPath);
+                restored = true;
+            } else {
+                // Legacy strip: remove an injected script tag when no backup exists
+                let htmlCode = fs.readFileSync(htmlPath, 'utf8');
+                if (htmlCode.includes('ide-payload.js')) {
+                    htmlCode = htmlCode.replace(/[ \t]*<script src="\.\/ide-payload\.js"><\/script>\r?\n?/g, '');
+                    fs.writeFileSync(htmlPath, htmlCode);
+                    restored = true;
+                }
+            }
+        }
+        // Remove payload copies left next to the HTML files
+        for (const dir of htmlDirs) {
+            const jsPath = path.join(dir, 'ide-payload.js');
+            if (fs.existsSync(jsPath)) {
+                fs.rmSync(jsPath, { force: true });
                 restored = true;
             }
         }
@@ -186,7 +216,7 @@ async function patchStandard(asarPath, isRestore) {
     } catch (e) {
         spinner.fail('Access Denied.');
         console.error(red('\n[!] OS Exception: ' + e.message));
-        console.error(yellow('Action required: Elevate your terminal privileges (Run as Administrator/sudo).'));
+        console.error(yellow('Action required: Close Antigravity / Antigravity IDE if they are running, then elevate your terminal privileges (Run as Administrator/sudo).'));
         return;
     }
     
@@ -248,7 +278,6 @@ win.webContents.on('dom-ready', () => {
         }
 
         utilsCode = utilsCode.replace(anchor, payload);
-        utilsCode = utilsCode.replace(/devTools:\s*!electron_1?\.app\.isPackaged/g, 'devTools: true');
         fs.writeFileSync(utilsPath, utilsCode);
 
         const fontSource = path.join(__dirname, 'Vazirmatn-Variable.woff2');
@@ -280,7 +309,21 @@ function getGeminiPath() {
         if (fs.existsSync(base)) {
             const dirs = fs.readdirSync(base).filter(f => f.startsWith('app-') && fs.statSync(path.join(base, f)).isDirectory());
             if (dirs.length > 0) {
-                dirs.sort();
+                // Numeric-aware sort so app-1.10 ranks above app-1.9 (plain sort is lexical)
+                dirs.sort((a, b) => {
+                    const va = (a.match(/(\d+(?:\.\d+)*)/) || [])[1];
+                    const vb = (b.match(/(\d+(?:\.\d+)*)/) || [])[1];
+                    if (va && vb) {
+                        const na = va.split('.').map(Number);
+                        const nb = vb.split('.').map(Number);
+                        for (let i = 0; i < Math.max(na.length, nb.length); i++) {
+                            const diff = (na[i] || 0) - (nb[i] || 0);
+                            if (diff !== 0) return diff;
+                        }
+                        return 0;
+                    }
+                    return a.localeCompare(b);
+                });
                 return path.join(base, dirs[dirs.length - 1], 'resources', 'app.asar');
             }
         }
@@ -333,6 +376,7 @@ async function patchGemini(asarPath, isRestore) {
     } catch (e) {
         spinner.fail('Access Denied.');
         console.error(red('\n[!] OS Exception: ' + e.message));
+        console.error(yellow('Action required: Close the Gemini app if it is running, then elevate your terminal privileges (Run as Administrator/sudo).'));
         return;
     }
     
