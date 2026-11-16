@@ -258,21 +258,32 @@
             /* Mathematical formulas, code blocks and monospace preservation */
             pre, code, kbd, samp, var,
             pre *, code *,
-            .monaco-editor .view-lines,
-            .katex, .katex *,
-            mjx-container, mjx-container *,
-            math, math *,
-            span[class*="math"],
-            span[class*="formula"],
-            math-inline,
-            math-display {
+            .monaco-editor .view-lines {
                 direction: ltr !important;
                 text-align: left !important;
                 unicode-bidi: isolate !important;
                 font-family: var(--vscode-editor-font-family, Consolas, "Courier New", monospace) !important;
             }
 
-            code, kbd, samp, var, math-inline, span[class*="math-inline"] {
+            /* Math renderers (KaTeX, MathJax, Gemini math-block / math-inline, and
+               plain-text math fallbacks) keep their NATIVE fonts and a forced LTR
+               flow so bidi reordering can never scramble formulas */
+            .katex, .katex *,
+            .katex-display, .katex-display *,
+            mjx-container, mjx-container *,
+            math, math *,
+            math-block, math-inline, math-display,
+            div.math-block, span.math-inline,
+            [class*="math-block"], [class*="math-inline"],
+            [class*="katex"], [class*="mathjax"],
+            span[class*="math"],
+            span[class*="formula"] {
+                direction: ltr !important;
+                text-align: left !important;
+                unicode-bidi: isolate !important;
+            }
+
+            code, kbd, samp, var, math-inline, span[class*="math-inline"], [class*="math-inline"] {
                 display: inline-block;
                 unicode-bidi: isolate !important;
             }
@@ -336,14 +347,23 @@
             [class*="file-chip"],
             [class*="attachment-chip"],
             [class*="source-chip"],
-            [class*="citation"],
-            [class*="file-preview"],
-            mat-chip:not(.elicitation-item) {
+            [class*="citation"] {
                 width: auto !important;
                 max-width: 100% !important;
                 display: inline-flex !important;
                 align-items: center !important;
                 vertical-align: middle !important;
+                box-sizing: border-box !important;
+            }
+
+            /* File-preview / attachment CARDS keep their native block layout and
+               positioning; we only clamp their width so they never overflow */
+            [class*="file-preview"],
+            [class*="media-preview"],
+            [class*="image-preview"],
+            [class*="thumbnail"],
+            mat-chip:not(.elicitation-item) {
+                max-width: 100% !important;
                 box-sizing: border-box !important;
             }
 
@@ -524,8 +544,11 @@
                 align-items: flex-end !important;
             }
 
-            /* Every child component inside user-query (thumbnails, query bubbles, actions)
-               must maintain strict right-edge alignment (X = 679) flush with each other */
+            /* Every child component inside user-query (query bubbles, actions)
+               must maintain strict right-edge alignment flush with each other.
+               Attachment / file-preview cards are intentionally NOT listed here:
+               they keep their native positioning, which prevents the upload
+               preview card from drifting over the message text. */
             user-query > *,
             .user-query > *,
             [class*="user-query"] > *,
@@ -540,23 +563,9 @@
             .user-query [class*="query-container"],
             user-query [class*="bubble"],
             .user-query [class*="bubble"],
-            user-query [class*="file-preview"],
-            .user-query [class*="file-preview"],
-            user-query [class*="attachment"],
-            .user-query [class*="attachment"],
-            user-query [class*="media-preview"],
-            .user-query [class*="media-preview"],
-            user-query [class*="image-preview"],
-            .user-query [class*="image-preview"],
-            user-query [class*="thumbnail"],
-            .user-query [class*="thumbnail"],
             user-query [class*="query-actions"],
             .user-query [class*="query-actions"],
-            .monaco-chat-request .value,
-            .monaco-chat-request [class*="file-preview"],
-            .monaco-chat-request [class*="attachment"],
-            .monaco-chat-request [class*="media-preview"],
-            .monaco-chat-request [class*="image-preview"] {
+            .monaco-chat-request .value {
                 align-self: flex-end !important;
                 margin-left: auto !important;
                 margin-right: 0 !important;
@@ -1221,6 +1230,10 @@
             clsStr.includes('icon-button') ||
             clsStr.includes('chip__icon') ||
             clsStr.includes('katex') ||
+            clsStr.includes('math-block') ||
+            clsStr.includes('math-inline') ||
+            clsStr.includes('mathjax') ||
+            clsStr.includes('mjx') ||
             clsStr.includes('monaco-editor')) return false;
 
         // Layout-only containers: their styling is fully handled by the injected CSS.
@@ -1256,9 +1269,10 @@
                 applyLayoutStyles(el, 'query-content', [['align-self', 'flex-end'], ['margin-left', 'auto'], ['margin-right', '0']]);
                 candidate = true;
             } else if (cls.match(/file-preview|attachment|media-preview|image-preview/i)) {
-                // Only apply user right-alignment if strictly inside user-query
+                // Attachment cards keep their native positioning; only clamp width
+                // so they can never overflow the message column.
                 if (el.closest('user-query, .user-query, [class*="user-query"], [class*="user-turn"], .monaco-chat-request')) {
-                    applyLayoutStyles(el, 'user-attachment', [['align-self', 'flex-end'], ['margin-left', 'auto'], ['margin-right', '0']]);
+                    applyLayoutStyles(el, 'user-attachment', [['max-width', '100%']]);
                 }
             } else if (cls.match(/query-actions/i)) {
                 if (el.closest('user-query, .user-query, [class*="user-query"], [class*="user-turn"], .monaco-chat-request')) {
